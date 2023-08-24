@@ -1,15 +1,22 @@
+import qrcode
+import os
+import random
+import asyncio
 from aiogram import Bot, Dispatcher, executor, types
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from aiogram.dispatcher import FSMContext
-from aiogram.dispatcher.filters.state import State, StatesGroup
-from aiogram.contrib.fsm_storage.memory import MemoryStorage
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, KeyboardButton, ReplyKeyboardMarkup
 from aiogram.utils.markdown import link
 from aiogram.types.input_file import InputFile
-from config import api_token, bot_id
+from tonsdk.utils import Address
+from pytonconnect import TonConnect
+from config import api_token
 import database
 
 bot = Bot(token=api_token)
-dp = Dispatcher(bot, storage=MemoryStorage())
+dp = Dispatcher(bot)
+
+Account = KeyboardButton('Personal account👤')
+
+PersonalAccount = ReplyKeyboardMarkup(resize_keyboard=True).add(Account)
 
 @dp.message_handler(commands=['start'], chat_type=types.ChatType.PRIVATE)
 async def start_command(message: types.Message):
@@ -17,20 +24,22 @@ async def start_command(message: types.Message):
     storage = database.Storage(str(message.from_user.id))
 
     # Initialize a connection using the given manifest URL and storage
-    connector = TonConnect(manifest_url='https://raw.githubusercontent.com/AndreyBurnosov/Checking_for_nft_availability/main/pytonconnect-manifest.json', storage=storage)
+    connector = TonConnect(manifest_url='https://raw.githubusercontent.com/coinvent-solutions/TSPC/main/pytonconnect-manifest.json?token=GHSAT0AAAAAAB76L5OHFO5Z7Q6DIIUZWX5EZHHHTGQ', storage=storage)
     # Attempt to restore the existing connection, if any
     is_connected = await connector.restore_connection()
 
     # If not connected, prompt the user to connect their wallet
     if not is_connected:
-        await message.answer("To check for the presence of NFT, connect your wallet in Tonkeeper")
+        await message.answer("Before you start working with the bot, connect your wallet")
         await connect_wallet_tonkeeper(message)
         return
     
-    user_channel_status = await bot.get_chat_member(chat_id='@chatid', user_id=message.from_user.id)
+    user_channel_status = await bot.get_chat_member(chat_id=-1001874038358, user_id=message.from_user.id)
     if user_channel_status["status"] == 'left':
-        message.answer("Before you start working with the bot, subscribe to the channel")
-        return 
+        await message.answer("Before you start working with the bot, subscribe to the channel")
+        return
+
+    await message.answer("The bot is ready to work", reply_markup = PersonalAccount)
 
 @dp.message_handler(commands=['connect_wallet'], chat_type=types.ChatType.PRIVATE)
 async def connect_wallet_tonkeeper(message: types.Message):
@@ -38,7 +47,7 @@ async def connect_wallet_tonkeeper(message: types.Message):
     storage = database.Storage(str(message.from_user.id))
     
     # Initialize a connection using the given manifest URL and storage
-    connector = TonConnect(manifest_url='https://raw.githubusercontent.com/AndreyBurnosov/Checking_for_nft_availability/main/pytonconnect-manifest.json', storage=storage)
+    connector = TonConnect(manifest_url='https://raw.githubusercontent.com/coinvent-solutions/TSPC/main/pytonconnect-manifest.json?token=GHSAT0AAAAAAB76L5OHFO5Z7Q6DIIUZWX5EZHHHTGQ', storage=storage)
     # Attempt to restore the existing connection, if any
     is_connected = await connector.restore_connection()
 
@@ -55,7 +64,7 @@ async def connect_wallet_tonkeeper(message: types.Message):
 
     # Create an inline keyboard markup with a button to open the connection URL
     urlkb = InlineKeyboardMarkup(row_width=1)
-    urlButton = InlineKeyboardButton(text=f'Open {message.text}', url=generated_url_tonkeeper)        
+    urlButton = InlineKeyboardButton(text=f'Open tonkeeper', url=generated_url_tonkeeper)        
     urlkb.add(urlButton)
     
     # Generate a QR code for the connection URL and save it as an image
@@ -81,4 +90,12 @@ async def connect_wallet_tonkeeper(message: types.Message):
     await msg.delete()
 
     # Confirm to the user that the wallet has been successfully connected
-    await message.answer('Your wallet has been successfully connected.', reply_markup=kb.Checkkb)
+    await message.answer('Your wallet has been successfully connected.')
+
+    if user_channel_status["status"] == 'left':
+        await message.answer("Before you start working with the bot, subscribe to the channel")
+        return
+
+# Entry point for the application; starts polling for updates from the Telegram API
+if __name__ == '__main__':
+    executor.start_polling(dp, skip_updates=True)
