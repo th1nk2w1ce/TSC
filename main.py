@@ -157,12 +157,22 @@ async def personal_account(message: types.Message):
         await message.answer("Before you start working with the bot, subscribe to the channel")
         return
 
-    referals = len(cur.execute(f"SELECT tg_id FROM users WHERE referer == {message.from_user.id}").fetchall())
+
+    all_referals = -1
+    firts_lvl_referals = len(cur.execute(f"SELECT tg_id FROM users WHERE referer == {message.from_user.id}").fetchall())
     me = await bot.get_me()
     link = 'https://t.me/' + me['username'] + f'?start={message.from_user.id}'
     sts = cur.execute(f"SELECT sts FROM users WHERE tg_id == {message.from_user.id}").fetchall()[0][0]
 
-    await bot.send_message(chat_id=message.from_user.id, text=f'Number of referrals: {referals}\nBalance: {sts}\nReferal link: {link}')
+    stack = []
+    stack.append(message.from_user.id)
+    while len(stack) > 0:
+        all_referals += 1
+        tg_id = stack.pop()
+        for referal in cur.execute(f"SELECT tg_id FROM users WHERE referer == {tg_id}").fetchall():
+            stack.append(referal[0])
+    
+    await bot.send_message(chat_id=message.from_user.id, text=f'1st lvl referals: {firts_lvl_referals}\nNumber of all referrals: {all_referals}\nBalance: {sts}\nReferal link: {link}')
 
 # Entry point for the application; starts polling for updates from the Telegram API
 if __name__ == '__main__':
