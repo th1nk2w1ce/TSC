@@ -40,7 +40,7 @@ async def start_command(message: types.Message):
         con.commit()
 
     if len(message.text.split()) > 1:
-        if not cur.execute(f"SELECT referal FROM referals WHERE owner == {message.text.split()[1]} AND referal == {message.from_user.id}").fetchall() and int(message.text.split()[1]) != int(message.from_user.id):
+        if not cur.execute(f"SELECT referal FROM referals WHERE referal == {message.from_user.id}").fetchall() and int(message.text.split()[1]) != int(message.from_user.id):
             sts = cur.execute(f"SELECT sts FROM users WHERE tg_id == {message.text.split()[1]}").fetchall()[0][0]
             cur.execute(f"INSERT INTO referals (owner, referal) VALUES ({message.text.split()[1]}, {message.from_user.id})")
             cur.execute(f"UPDATE users SET sts = {sts + 0.2} WHERE tg_id = {message.text.split()[1]}")
