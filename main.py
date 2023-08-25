@@ -34,16 +34,15 @@ async def start_command(message: types.Message):
     if not cur.execute(f"SELECT tg_id FROM users WHERE tg_id == {message.from_user.id}").fetchall():
         cur.execute(f"INSERT INTO users (tg_id) VALUES ({message.from_user.id})")
         con.commit()
-
-    if len(message.text.split()) > 1:
-        if cur.execute(f"SELECT referer FROM users WHERE tg_id == {message.from_user.id}").fetchall()[0][0] is None and int(message.text.split()[1]) != int(message.from_user.id):
-            try:
-                sts = cur.execute(f"SELECT sts FROM users WHERE tg_id == {message.text.split()[1]}").fetchall()[0][0]
-                cur.execute(f"UPDATE users SET referer = {message.text.split()[1]} WHERE tg_id = {message.from_user.id}")
-                cur.execute(f"UPDATE users SET sts = {sts + 0.2} WHERE tg_id = {message.text.split()[1]}")
-                con.commit()
-            except:
-                pass
+        if len(message.text.split()) > 1:
+            if int(message.text.split()[1]) != int(message.from_user.id):
+                try:
+                    sts = cur.execute(f"SELECT sts FROM users WHERE tg_id == {message.text.split()[1]}").fetchall()[0][0]
+                    cur.execute(f"UPDATE users SET referer = {message.text.split()[1]} WHERE tg_id = {message.from_user.id}")
+                    cur.execute(f"UPDATE users SET sts = {sts + 0.2} WHERE tg_id = {message.text.split()[1]}")
+                    con.commit()
+                except:
+                    pass
 
     # Create a storage instance based on the user's ID
     storage = database.Storage(str(message.from_user.id))
