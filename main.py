@@ -18,12 +18,8 @@ cur = con.cursor()
 cur.execute('''CREATE TABLE IF NOT EXISTS "users" (
     "tg_id" INTEGER,
     "sts"   INTEGER DEFAULT (0),
-    "flag"  BOOLEAN DEFAULT (false)
-)''')
-
-cur.execute('''CREATE TABLE IF NOT EXISTS "referals" (
-    "owner" INTEGER,
-    "referal" INTEGER
+    "flag"  BOOLEAN DEFAULT (false),
+    "referer" INTEGER
 )''')
 
 bot = Bot(token=api_token)
@@ -40,11 +36,14 @@ async def start_command(message: types.Message):
         con.commit()
 
     if len(message.text.split()) > 1:
-        if not cur.execute(f"SELECT referal FROM referals WHERE referal == {message.from_user.id}").fetchall() and int(message.text.split()[1]) != int(message.from_user.id):
-            sts = cur.execute(f"SELECT sts FROM users WHERE tg_id == {message.text.split()[1]}").fetchall()[0][0]
-            cur.execute(f"INSERT INTO referals (owner, referal) VALUES ({message.text.split()[1]}, {message.from_user.id})")
-            cur.execute(f"UPDATE users SET sts = {sts + 0.2} WHERE tg_id = {message.text.split()[1]}")
-            con.commit()
+        if cur.execute(f"SELECT referer FROM users WHERE tg_id == {message.from_user.id}").fetchall()[0][0] is None and int(message.text.split()[1]) != int(message.from_user.id):
+            try:
+                sts = cur.execute(f"SELECT sts FROM users WHERE tg_id == {message.text.split()[1]}").fetchall()[0][0]
+                cur.execute(f"UPDATE users SET referer = {message.text.split()[1]} WHERE tg_id = {message.from_user.id}")
+                cur.execute(f"UPDATE users SET sts = {sts + 0.2} WHERE tg_id = {message.text.split()[1]}")
+                con.commit()
+            except:
+                pass
 
     # Create a storage instance based on the user's ID
     storage = database.Storage(str(message.from_user.id))
@@ -134,9 +133,32 @@ async def connect_wallet_tonkeeper(message: types.Message):
 
 @dp.message_handler(text = 'Personal account👤', chat_type=types.ChatType.PRIVATE)
 async def personal_account(message: types.Message):
+    if not cur.execute(f"SELECT tg_id FROM users WHERE tg_id == {message.from_user.id}").fetchall():
+        cur.execute(f"INSERT INTO users (tg_id) VALUES ({message.from_user.id})")
+        con.commit()
+
     await message.delete()
 
-    referals = len(cur.execute(f"SELECT referal FROM referals WHERE owner == {message.from_user.id}").fetchall())
+    # Create a storage instance based on the user's ID
+    storage = database.Storage(str(message.from_user.id))
+
+    # Initialize a connection using the given manifest URL and storage
+    connector = TonConnect(manifest_url='https://raw.githubusercontent.com/AndreyBur/Access_control_bot/master/pytonconnect-manifest.json', storage=storage)
+    # Attempt to restore the existing connection, if any
+    is_connected = await connector.restore_connection()
+
+    # If not connected, prompt the user to connect their wallet
+    if not is_connected:
+        await message.answer("Before you start working with the bot, connect your wallet")
+        await connect_wallet_tonkeeper(message)
+        return
+    
+    user_channel_status = await bot.get_chat_member(chat_id=-1001874038358, user_id=message.from_user.id)
+    if user_channel_status["status"] == 'left':
+        await message.answer("Before you start working with the bot, subscribe to the channel")
+        return
+
+    referals = len(cur.execute(f"SELECT tg_id FROM users WHERE referer == {message.from_user.id}").fetchall())
     me = await bot.get_me()
     link = 'https://t.me/' + me['username'] + f'?start={message.from_user.id}'
     sts = cur.execute(f"SELECT sts FROM users WHERE tg_id == {message.from_user.id}").fetchall()[0][0]
