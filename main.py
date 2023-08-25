@@ -45,9 +45,6 @@ async def start_command(message: types.Message):
             cur.execute(f"INSERT INTO referals (owner, referal) VALUES ({message.text.split()[1]}, {message.from_user.id})")
             cur.execute(f"UPDATE users SET sts = {sts + 0.2} WHERE tg_id = {message.text.split()[1]}")
             con.commit()
-    
-    me = await bot.get_me()
-    username = me['username']
 
     # Create a storage instance based on the user's ID
     storage = database.Storage(str(message.from_user.id))
@@ -134,6 +131,17 @@ async def connect_wallet_tonkeeper(message: types.Message):
     if user_channel_status["status"] == 'left':
         await message.answer("Before you start working with the bot, subscribe to the channel")
         return
+
+@dp.message_handler(text = 'Personal account👤', chat_type=types.ChatType.PRIVATE)
+async def personal_account(message: types.Message):
+    await message.delete()
+
+    referals = len(cur.execute(f"SELECT referal FROM referals WHERE owner == {message.from_user.id}").fetchall())
+    me = await bot.get_me()
+    link = 'https://t.me/' + me['username'] + f'?start={message.from_user.id}'
+    sts = cur.execute(f"SELECT sts FROM users WHERE tg_id == {message.from_user.id}").fetchall()[0][0]
+
+    await bot.send_message(chat_id=message.from_user.id, text=f'Number of referrals: {referals}\nBalance: {sts}\nReferal link: {link}')
 
 # Entry point for the application; starts polling for updates from the Telegram API
 if __name__ == '__main__':
