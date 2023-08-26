@@ -19,7 +19,8 @@ cur.execute('''CREATE TABLE IF NOT EXISTS "users" (
     "tg_id" INTEGER,
     "sts"   INTEGER DEFAULT (0),
     "flag"  BOOLEAN DEFAULT (false),
-    "referer" INTEGER
+    "referer" INTEGER,
+    "all_referals" INTEGER DEFAULT (0)
 )''')
 
 bot = Bot(token=api_token)
@@ -41,6 +42,18 @@ async def start_command(message: types.Message):
                     cur.execute(f"UPDATE users SET referer = {message.text.split()[1]} WHERE tg_id = {message.from_user.id}")
                     cur.execute(f"UPDATE users SET sts = {sts + 0.2} WHERE tg_id = {message.text.split()[1]}")
                     con.commit()
+
+                    user = message.from_user.id
+                    depth = 1
+                    while depth <= 12:
+                        referer = cur.execute(f"SELECT referer FROM users WHERE tg_id == {user}").fetchall()[0][0]
+                        if referer is None:
+                            break
+                        all_referals = cur.execute(f"SELECT all_referals FROM users WHERE tg_id == {referer}").fetchall()[0][0]
+                        cur.execute(f"UPDATE users SET all_referals = {all_referals + 1} WHERE tg_id = {referer}")
+                        con.commit()
+                        depth += 1
+                        user = referer
                 except:
                     pass
 
@@ -158,19 +171,11 @@ async def personal_account(message: types.Message):
         return
 
 
-    all_referals = -1
+    all_referals = cur.execute(f"SELECT all_referals FROM users WHERE tg_id == {message.from_user.id}").fetchall()[0][0]
     firts_lvl_referals = len(cur.execute(f"SELECT tg_id FROM users WHERE referer == {message.from_user.id}").fetchall())
     me = await bot.get_me()
     link = 'https://t.me/' + me['username'] + f'?start={message.from_user.id}'
     sts = cur.execute(f"SELECT sts FROM users WHERE tg_id == {message.from_user.id}").fetchall()[0][0]
-
-    stack = []
-    stack.append(message.from_user.id)
-    while len(stack) > 0:
-        all_referals += 1
-        tg_id = stack.pop()
-        for referal in cur.execute(f"SELECT tg_id FROM users WHERE referer == {tg_id}").fetchall():
-            stack.append(referal[0])
     
     await bot.send_message(chat_id=message.from_user.id, text=f'1st lvl referals: {firts_lvl_referals}\nNumber of all referrals: {all_referals}\nBalance: {sts}\nReferal link: {link}')
 
