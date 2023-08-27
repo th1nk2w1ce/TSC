@@ -124,6 +124,8 @@ async def connect_wallet_tonkeeper(message: types.Message):
     # Remove the saved image from the local file system
     os.remove(path)
 
+    address = ''
+
     # Check for a successful connection in a loop, with a maximum of 300 iterations (300 seconds)
     for i in range(300):
         await asyncio.sleep(1)
@@ -135,6 +137,9 @@ async def connect_wallet_tonkeeper(message: types.Message):
     # Delete the previously sent QR code message
     await msg.delete()
 
+    if not address:
+        return
+        
     # Confirm to the user that the wallet has been successfully connected
     await message.answer('Your wallet has been successfully connected.')
 
