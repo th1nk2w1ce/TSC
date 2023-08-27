@@ -26,7 +26,7 @@ cur.execute('''CREATE TABLE IF NOT EXISTS "users" (
 bot = Bot(token=api_token)
 dp = Dispatcher(bot)
 
-Account = KeyboardButton('Personal account👤')
+Account = KeyboardButton('Личный кабинет👤')
 
 PersonalAccount = ReplyKeyboardMarkup(resize_keyboard=True).add(Account)
 
@@ -67,13 +67,13 @@ async def start_command(message: types.Message):
 
     # If not connected, prompt the user to connect their wallet
     if not is_connected:
-        await message.answer("Before you start working with the bot, connect your wallet")
+        await message.answer("Прежде чем начать работу с ботом подключите кошелёк")
         await connect_wallet_tonkeeper(message)
         return
     
-    user_channel_status = await bot.get_chat_member(chat_id=-1001874038358, user_id=message.from_user.id)
+    user_channel_status = await bot.get_chat_member(chat_id=-1001738673084, user_id=message.from_user.id)
     if user_channel_status["status"] == 'left':
-        await message.answer("Before you start working with the bot, subscribe to the channel")
+        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](https://t.me/tspc_official)", parse_mode='MarkdownV2', disable_web_page_preview=True)
         return
     
     if not cur.execute(f"SELECT flag FROM users WHERE tg_id == {message.from_user.id}").fetchall()[0][0]:
@@ -82,7 +82,7 @@ async def start_command(message: types.Message):
         cur.execute(f"UPDATE users SET flag = true WHERE tg_id = {message.from_user.id}")
         con.commit()
 
-    await message.answer("The bot is ready to work", reply_markup = PersonalAccount)
+    await message.answer("Бот готов к работе", reply_markup = PersonalAccount)
 
 @dp.message_handler(commands=['connect_wallet'], chat_type=types.ChatType.PRIVATE)
 async def connect_wallet_tonkeeper(message: types.Message):
@@ -99,7 +99,7 @@ async def connect_wallet_tonkeeper(message: types.Message):
 
     # If already connected, inform the user and exit the function
     if is_connected:
-        await message.answer('Your wallet is already connected.')
+        await message.answer('Ваш кошелёк уже поключён')
         return
 
     # Retrieve the available wallets
@@ -110,7 +110,7 @@ async def connect_wallet_tonkeeper(message: types.Message):
 
     # Create an inline keyboard markup with a button to open the connection URL
     urlkb = InlineKeyboardMarkup(row_width=1)
-    urlButton = InlineKeyboardButton(text=f'Open tonkeeper', url=generated_url_tonkeeper)        
+    urlButton = InlineKeyboardButton(text=f'Открыть tonkeeper', url=generated_url_tonkeeper)        
     urlkb.add(urlButton)
     
     # Generate a QR code for the connection URL and save it as an image
@@ -139,16 +139,16 @@ async def connect_wallet_tonkeeper(message: types.Message):
 
     if not address:
         return
-        
-    # Confirm to the user that the wallet has been successfully connected
-    await message.answer('Your wallet has been successfully connected.')
 
-    user_channel_status = await bot.get_chat_member(chat_id=-1001874038358, user_id=message.from_user.id)
+    # Confirm to the user that the wallet has been successfully connected
+    await message.answer('Ваш кошелёк успешно подключён')
+
+    user_channel_status = await bot.get_chat_member(chat_id=-1001738673084, user_id=message.from_user.id)
     if user_channel_status["status"] == 'left':
-        await message.answer("Before you start working with the bot, subscribe to the channel")
+        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](https://t.me/tspc_official)", parse_mode='MarkdownV2', disable_web_page_preview=True)
         return
 
-@dp.message_handler(text = 'Personal account👤', chat_type=types.ChatType.PRIVATE)
+@dp.message_handler(text = 'Личный кабинет👤', chat_type=types.ChatType.PRIVATE)
 async def personal_account(message: types.Message):
     if not cur.execute(f"SELECT tg_id FROM users WHERE tg_id == {message.from_user.id}").fetchall():
         cur.execute(f"INSERT INTO users (tg_id) VALUES ({message.from_user.id})")
@@ -166,13 +166,13 @@ async def personal_account(message: types.Message):
 
     # If not connected, prompt the user to connect their wallet
     if not is_connected:
-        await message.answer("Before you start working with the bot, connect your wallet")
+        await message.answer("Прежде чем начать работу с ботом подключите кошелёк")
         await connect_wallet_tonkeeper(message)
         return
     
-    user_channel_status = await bot.get_chat_member(chat_id=-1001874038358, user_id=message.from_user.id)
+    user_channel_status = await bot.get_chat_member(chat_id=-1001738673084, user_id=message.from_user.id)
     if user_channel_status["status"] == 'left':
-        await message.answer("Before you start working with the bot, subscribe to the channel")
+        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](https://t.me/tspc_official)", parse_mode='MarkdownV2', disable_web_page_preview=True)
         return
 
 
@@ -182,7 +182,7 @@ async def personal_account(message: types.Message):
     link = 'https://t.me/' + me['username'] + f'?start={message.from_user.id}'
     sts = cur.execute(f"SELECT sts FROM users WHERE tg_id == {message.from_user.id}").fetchall()[0][0]
     
-    await bot.send_message(chat_id=message.from_user.id, text=f'1st lvl referals: {firts_lvl_referals}\nNumber of all referrals: {all_referals}\nBalance: {sts}\nReferal link: {link}')
+    await bot.send_message(chat_id=message.from_user.id, text=f'Рефералы первого уровня: {firts_lvl_referals}\nВсе рефералы: {all_referals}\nБаланс: {sts}\nРеферальная ссылка: {link}')
 
 # Entry point for the application; starts polling for updates from the Telegram API
 if __name__ == '__main__':
