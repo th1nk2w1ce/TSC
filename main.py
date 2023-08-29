@@ -30,6 +30,12 @@ Account = KeyboardButton('Личный кабинет👤')
 
 PersonalAccount = ReplyKeyboardMarkup(resize_keyboard=True).add(Account)
 
+check = InlineKeyboardMarkup(row_width=1)
+
+checkButton = InlineKeyboardButton(text='Проверить подписку', callback_data='check')        
+
+check.add(checkButton)
+
 @dp.message_handler(commands=['start'], chat_type=types.ChatType.PRIVATE)
 async def start_command(message: types.Message):
     if not cur.execute(f"SELECT tg_id FROM users WHERE tg_id == {message.from_user.id}").fetchall():
@@ -73,7 +79,7 @@ async def start_command(message: types.Message):
     
     user_channel_status = await bot.get_chat_member(chat_id=-1001738673084, user_id=message.from_user.id)
     if user_channel_status["status"] == 'left':
-        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](https://t.me/tspc_official)", parse_mode='MarkdownV2', disable_web_page_preview=True)
+        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](https://t.me/tspc_official)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
         return
     
     if not cur.execute(f"SELECT flag FROM users WHERE tg_id == {message.from_user.id}").fetchall()[0][0]:
@@ -145,8 +151,20 @@ async def connect_wallet_tonkeeper(message: types.Message):
 
     user_channel_status = await bot.get_chat_member(chat_id=-1001738673084, user_id=message.from_user.id)
     if user_channel_status["status"] == 'left':
-        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](https://t.me/tspc_official)", parse_mode='MarkdownV2', disable_web_page_preview=True)
+        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](https://t.me/tspc_official)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
         return
+    
+    await message.answer("Бот готов к работе", reply_markup = PersonalAccount)
+
+@dp.callback_query_handler(text = 'check')
+async def check_subscription(call: types.CallbackQuery):
+    user_channel_status = await bot.get_chat_member(chat_id=-1001738673084, user_id=call.from_user.id)
+    if user_channel_status["status"] == 'left':
+        await call.answer("Вы не подписаны на канал")
+        return
+    
+    await call.message.delete()
+    await call.message.answer("Бот готов к работе", reply_markup = PersonalAccount)
 
 @dp.message_handler(text = 'Личный кабинет👤', chat_type=types.ChatType.PRIVATE)
 async def personal_account(message: types.Message):
@@ -172,7 +190,7 @@ async def personal_account(message: types.Message):
     
     user_channel_status = await bot.get_chat_member(chat_id=-1001738673084, user_id=message.from_user.id)
     if user_channel_status["status"] == 'left':
-        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](https://t.me/tspc_official)", parse_mode='MarkdownV2', disable_web_page_preview=True)
+        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](https://t.me/tspc_official)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
         return
 
 
