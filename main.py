@@ -154,6 +154,12 @@ async def connect_wallet_tonkeeper(message: types.Message):
         await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](https://t.me/tspc_official)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
         return
     
+    if not cur.execute(f"SELECT flag FROM users WHERE tg_id == {message.from_user.id}").fetchall()[0][0]:
+        sts = cur.execute(f"SELECT sts FROM users WHERE tg_id == {message.from_user.id}").fetchall()[0][0]
+        cur.execute(f"UPDATE users SET sts = {sts + 1} WHERE tg_id = {message.from_user.id}")
+        cur.execute(f"UPDATE users SET flag = true WHERE tg_id = {message.from_user.id}")
+        con.commit()
+        
     await message.answer("Бот готов к работе", reply_markup = PersonalAccount)
 
 @dp.callback_query_handler(text = 'check')
@@ -193,6 +199,11 @@ async def personal_account(message: types.Message):
         await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](https://t.me/tspc_official)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
         return
 
+    if not cur.execute(f"SELECT flag FROM users WHERE tg_id == {message.from_user.id}").fetchall()[0][0]:
+        sts = cur.execute(f"SELECT sts FROM users WHERE tg_id == {message.from_user.id}").fetchall()[0][0]
+        cur.execute(f"UPDATE users SET sts = {sts + 1} WHERE tg_id = {message.from_user.id}")
+        cur.execute(f"UPDATE users SET flag = true WHERE tg_id = {message.from_user.id}")
+        con.commit()
 
     all_referals = cur.execute(f"SELECT all_referals FROM users WHERE tg_id == {message.from_user.id}").fetchall()[0][0]
     firts_lvl_referals = len(cur.execute(f"SELECT tg_id FROM users WHERE referer == {message.from_user.id}").fetchall())
