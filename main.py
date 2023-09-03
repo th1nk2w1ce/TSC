@@ -88,7 +88,7 @@ async def start_command(message: types.Message):
         cur.execute(f"UPDATE users SET flag = true WHERE tg_id = {message.from_user.id}")
         con.commit()
 
-    await message.answer("Бот готов к работе", reply_markup = PersonalAccount)
+    await message.answer("Нажмите кнопку «личный кабинет»", reply_markup = PersonalAccount)
 
 @dp.message_handler(commands=['connect_wallet'], chat_type=types.ChatType.PRIVATE)
 async def connect_wallet_tonkeeper(message: types.Message):
@@ -160,7 +160,7 @@ async def connect_wallet_tonkeeper(message: types.Message):
         cur.execute(f"UPDATE users SET flag = true WHERE tg_id = {message.from_user.id}")
         con.commit()
         
-    await message.answer("Бот готов к работе", reply_markup = PersonalAccount)
+    await message.answer("Нажмите кнопку «личный кабинет»", reply_markup = PersonalAccount)
 
 @dp.callback_query_handler(text = 'check')
 async def check_subscription(call: types.CallbackQuery):
@@ -170,7 +170,7 @@ async def check_subscription(call: types.CallbackQuery):
         return
     
     await call.message.delete()
-    await call.message.answer("Бот готов к работе", reply_markup = PersonalAccount)
+    await call.message.answer("Нажмите кнопку «личный кабинет»", reply_markup = PersonalAccount)
 
 @dp.message_handler(text = 'Личный кабинет👤', chat_type=types.ChatType.PRIVATE)
 async def personal_account(message: types.Message):
@@ -211,7 +211,7 @@ async def personal_account(message: types.Message):
     link = 'https://t.me/' + me['username'] + f'?start={message.from_user.id}'
     sts = cur.execute(f"SELECT sts FROM users WHERE tg_id == {message.from_user.id}").fetchall()[0][0]
     
-    await bot.send_message(chat_id=message.from_user.id, text=f'Рефералы первого уровня: {firts_lvl_referals}\nВсе рефералы: {all_referals}\nБаланс: {sts}\nРеферальная ссылка: {link}')
+    await bot.send_message(chat_id=message.from_user.id, text=f'Рефералы первого уровня: {firts_lvl_referals}\nВсе рефералы: {all_referals}\nБаланс STS: {sts}\nРеферальная ссылка: {link}')
 
 # Entry point for the application; starts polling for updates from the Telegram API
 if __name__ == '__main__':
