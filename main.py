@@ -211,11 +211,11 @@ async def personal_account(message: types.Message):
     link = 'https://t.me/' + me['username'].replace('_', '\\_') + f'?start\\={message.from_user.id}'
     sts = cur.execute(f"SELECT sts FROM users WHERE tg_id == {message.from_user.id}").fetchall()[0][0]
     referer = cur.execute(f"SELECT referer FROM users WHERE tg_id == {message.from_user.id}").fetchall()[0][0]
-    referer_name = (await bot.get_chat(referer)).first_name
 
     if referer is None:
         referer = 'никто'
     else:
+        referer_name = (await bot.get_chat(referer)).first_name
         referer = f'[{referer_name}](tg://user?id={referer})'
     
     await bot.send_message(chat_id=message.from_user.id, text=f'Рефералы первого уровня: {firts_lvl_referals}\nВсе рефералы: {all_referals}\nВас пригласил: {referer}\nБаланс STS: {sts}\nРеферальная ссылка: {link}'.replace('.', '\\.'), parse_mode='MarkdownV2')
