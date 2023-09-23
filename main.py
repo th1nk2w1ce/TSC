@@ -63,7 +63,7 @@ async def start_command(message: types.Message):
                 except:
                     pass
         else:
-            await bot.answer("Регистрация в боте возможна только по реферальной ссылке")
+            await message.answer("Регистрация в боте возможна только по реферальной ссылке")
             return
 
     # Create a storage instance based on the user's ID
