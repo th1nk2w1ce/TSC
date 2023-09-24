@@ -82,7 +82,7 @@ async def start_command(message: types.Message):
     
     user_channel_status = await bot.get_chat_member(chat_id=-1001738673084, user_id=message.from_user.id)
     if user_channel_status["status"] == 'left':
-        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](https://t.me/tspc_official)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
+        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](https://t.me/tspc_channel)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
         return
     
     if not cur.execute(f"SELECT flag FROM users WHERE tg_id == {message.from_user.id}").fetchall()[0][0]:
@@ -153,7 +153,7 @@ async def connect_wallet_tonkeeper(message: types.Message):
 
     user_channel_status = await bot.get_chat_member(chat_id=-1001738673084, user_id=message.from_user.id)
     if user_channel_status["status"] == 'left':
-        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](https://t.me/tspc_official)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
+        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](https://t.me/tspc_channel)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
         return
     
     if not cur.execute(f"SELECT flag FROM users WHERE tg_id == {message.from_user.id}").fetchall()[0][0]:
@@ -197,7 +197,7 @@ async def personal_account(message: types.Message):
     
     user_channel_status = await bot.get_chat_member(chat_id=-1001738673084, user_id=message.from_user.id)
     if user_channel_status["status"] == 'left':
-        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](https://t.me/tspc_official)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
+        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](https://t.me/tspc_channel)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
         return
 
     if not cur.execute(f"SELECT flag FROM users WHERE tg_id == {message.from_user.id}").fetchall()[0][0]:
