@@ -70,7 +70,7 @@ async def start_command(message: types.Message):
     storage = database.Storage(str(message.from_user.id))
 
     # Initialize a connection using the given manifest URL and storage
-    connector = TonConnect(manifest_url='https://raw.githubusercontent.com/AndreyBur/Access_control_bot/master/pytonconnect-manifest.json', storage=storage)
+    connector = TonConnect(manifest_url='https://raw.githubusercontent.com/th1nk2w1ce/TSPC-tonconnect/main/manifest.json', storage=storage)
     # Attempt to restore the existing connection, if any
     is_connected = await connector.restore_connection()
 
@@ -101,7 +101,7 @@ async def connect_wallet_tonkeeper(message: types.Message):
     storage = database.Storage(str(message.from_user.id))
     
     # Initialize a connection using the given manifest URL and storage
-    connector = TonConnect(manifest_url='https://raw.githubusercontent.com/AndreyBur/Access_control_bot/master/pytonconnect-manifest.json', storage=storage)
+    connector = TonConnect(manifest_url='https://raw.githubusercontent.com/th1nk2w1ce/TSPC-tonconnect/main/manifest.json', storage=storage)
     # Attempt to restore the existing connection, if any
     is_connected = await connector.restore_connection()
 
@@ -185,7 +185,7 @@ async def personal_account(message: types.Message):
     storage = database.Storage(str(message.from_user.id))
 
     # Initialize a connection using the given manifest URL and storage
-    connector = TonConnect(manifest_url='https://raw.githubusercontent.com/AndreyBur/Access_control_bot/master/pytonconnect-manifest.json', storage=storage)
+    connector = TonConnect(manifest_url='https://raw.githubusercontent.com/th1nk2w1ce/TSPC-tonconnect/main/manifest.json', storage=storage)
     # Attempt to restore the existing connection, if any
     is_connected = await connector.restore_connection()
 
