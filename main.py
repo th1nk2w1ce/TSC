@@ -3,14 +3,28 @@ import os
 import sqlite3
 import random
 import asyncio
+import requests
+import json
+import time
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, KeyboardButton, ReplyKeyboardMarkup
 from aiogram.utils.markdown import link
 from aiogram.types.input_file import InputFile
-from tonsdk.utils import Address
+from aiogram.dispatcher import FSMContext
+from aiogram.dispatcher.filters.state import State, StatesGroup
+from aiogram.contrib.fsm_storage.memory import MemoryStorage
+from tonsdk.utils import *
+from tonsdk.boc import *
+
 from pytonconnect import TonConnect
 from config import api_token
 import database
+
+class States(StatesGroup):
+    Sell_ts = State()
+    Stake_sts = State()
+    Unstake_sts = State()
+    Buy_ts = State()
 
 con = sqlite3.connect("DB.db", check_same_thread=False)
 cur = con.cursor()
@@ -24,7 +38,7 @@ cur.execute('''CREATE TABLE IF NOT EXISTS "users" (
 )''')
 
 bot = Bot(token=api_token)
-dp = Dispatcher(bot)
+dp = Dispatcher(bot, storage=MemoryStorage())
 
 Account = KeyboardButton('Личный кабинет👤')
 
@@ -36,11 +50,22 @@ checkButton = InlineKeyboardButton(text='Проверить подписку', c
 
 check.add(checkButton)
 
-@dp.message_handler(commands=['start'], chat_type=types.ChatType.PRIVATE)
+sts_jetton_minter_address = 'EQByOAMcF6dy-ITBQBkt8szOdsVaGJdvVJJ88sLBlmpZUSg6'
+ts_jetton_minter_address = 'EQC13fWOjunJP2fsA1cG0ynUKVs0Nrf4wM4iBc7egsZM3Ayd'
+
+async def get_wallet_address(address, minter):
+    url = f'https://tonapi.io/v2/blockchain/accounts/{minter}/methods/get_wallet_address?args={address}'
+    try:
+        response = requests.get(url).json()['decoded']['jetton_wallet_address']
+        return response
+    except:
+        return None
+
+@dp.message_handler(commands=['start'], state='*', chat_type=types.ChatType.PRIVATE)
 async def start_command(message: types.Message):
     if not cur.execute(f"SELECT tg_id FROM users WHERE tg_id == {message.from_user.id}").fetchall():
         if len(message.text.split()) > 1:
-            if int(message.text.split()[1]) != int(message.from_user.id):
+            if int(message.text.split()[1]) != int(message.from_user.id) and cur.execute(f"SELECT tg_id FROM users WHERE tg_id == {message.text.split()[1]}").fetchall():
                 try:
                     cur.execute(f"INSERT INTO users (tg_id) VALUES ({message.from_user.id})")
                     con.commit()
@@ -61,7 +86,10 @@ async def start_command(message: types.Message):
                         depth += 1
                         user = referer
                 except:
-                    pass
+                    return
+            else:
+                await message.answer("Не действительная ссылка")
+                return
         else:
             await message.answer("Регистрация в боте возможна только по реферальной ссылке")
             return
@@ -70,7 +98,7 @@ async def start_command(message: types.Message):
     storage = database.Storage(str(message.from_user.id))
 
     # Initialize a connection using the given manifest URL and storage
-    connector = TonConnect(manifest_url='https://raw.githubusercontent.com/th1nk2w1ce/TSPC-tonconnect/main/manifest.json', storage=storage)
+    connector = TonConnect(manifest_url='https://raw.githubusercontent.com/AndreyBur/Access_control_bot/master/pytonconnect-manifest.json', storage=storage)
     # Attempt to restore the existing connection, if any
     is_connected = await connector.restore_connection()
 
@@ -80,10 +108,92 @@ async def start_command(message: types.Message):
         await connect_wallet_tonkeeper(message)
         return
     
-    user_channel_status = await bot.get_chat_member(chat_id=-1001738673084, user_id=message.from_user.id)
-    if user_channel_status["status"] == 'left':
-        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](https://t.me/tspc_channel)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
+    sts_wallet_address = await get_wallet_address(connector.account.address, sts_jetton_minter_address)
+    ts_wallet_address = await get_wallet_address(connector.account.address, ts_jetton_minter_address)
+
+    if (sts_wallet_address is None or ts_wallet_address is None):
+        await message.answer("Что-то пошло не так...\nПопробуйте ещё раз позже")
         return
+    
+    sts_referer = ''
+    ts_referer = ''
+
+    storage_referer = database.Storage(str(cur.execute(f"SELECT referer FROM users WHERE tg_id == {message.from_user.id}").fetchall()[0][0]))
+
+    connector_referer = TonConnect(manifest_url='https://raw.githubusercontent.com/AndreyBur/Access_control_bot/master/pytonconnect-manifest.json', storage=storage_referer)
+    # Attempt to restore the existing connection, if any
+    is_connected = await connector_referer.restore_connection()
+
+    if not is_connected:
+        await message.answer("Что-то пошло не так...\nПопробуйте ещё раз позже")
+        return
+
+    referer_address = connector_referer.account.address
+
+    try:
+        await asyncio.sleep(5)
+        url = f'https://tonapi.io/v2/blockchain/accounts/{ts_wallet_address}/methods/get_extra_data'
+        ts_referer = requests.get(url).json()
+        url = f'https://tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_extra_data'
+        sts_referer = requests.get(url).json()
+    except:
+        await message.answer("Что-то пошло не так...\nПопробуйте ещё раз позже")
+        return
+
+    transaction = { }
+    if ('error' in ts_referer and ts_referer['error'] == 'rate limit: free tier') or ('error' in sts_referer and sts_referer['error'] == 'rate limit: free tier'):
+        await message.answer("Что-то пошло не так...\nПопробуйте ещё раз позже")
+        return
+
+    if ('error' in ts_referer and ts_referer['error'] == 'entity not found') and ('error' in sts_referer and sts_referer['error'] == 'entity not found'):
+        transaction = {
+            'valid_until': int(time.time()) + 300,
+            'messages': [
+                {
+                    'address': sts_jetton_minter_address,
+                    'amount': '1300000000',
+                    'payload': bytes_to_b64str(begin_cell().store_uint(0x2fc0dce9, 32).store_uint(1, 64).store_uint(1, 1).store_ref(begin_cell().store_uint(0x14dc5f3d, 32).store_uint(1, 64).store_address(Address(referer_address)).end_cell()).end_cell().to_boc())
+                },
+
+                {
+                    'address': ts_jetton_minter_address,
+                    'amount': '1300000000',
+                    'payload': bytes_to_b64str(begin_cell().store_uint(0x2fc0dce9, 32).store_uint(1, 64).store_uint(1, 1).store_ref(begin_cell().store_uint(0x14dc5f3d, 32).store_uint(1, 64).store_address(Address(referer_address)).end_cell()).end_cell().to_boc())
+                },
+            ]
+        }
+    elif ('error' in ts_referer and ts_referer['error'] == 'entity not found'):
+        transaction = {
+            'valid_until': int(time.time()) + 300,
+            'messages': [
+                {
+                    'address': ts_jetton_minter_address,
+                    'amount': '1300000000',
+                    'payload': bytes_to_b64str(begin_cell().store_uint(0x2fc0dce9, 32).store_uint(1, 64).store_uint(1, 1).store_ref(begin_cell().store_uint(0x14dc5f3d, 32).store_uint(1, 64).store_address(Address(referer_address)).end_cell()).end_cell().to_boc())
+                },
+            ]
+        }
+    elif ('error' in sts_referer and sts_referer['error'] == 'entity not found'):
+        transaction = {
+            'valid_until': int(time.time()) + 300,
+            'messages': [
+                {
+                    'address': sts_jetton_minter_address,
+                    'amount': '1300000000',
+                    'payload': bytes_to_b64str(begin_cell().store_uint(0x2fc0dce9, 32).store_uint(1, 64).store_uint(1, 1).store_ref(begin_cell().store_uint(0x14dc5f3d, 32).store_uint(1, 64).store_address(Address(referer_address)).end_cell()).end_cell().to_boc())
+                },
+            ]
+        }
+    
+    
+    if transaction:
+        try:
+            await message.answer("Подтвердите транзакцию в кошельке для дальнейшей работы с ботом")
+            await connector.send_transaction(transaction)
+        except:
+            await message.answer("Что-то пошло не так...\nПопробуйте ещё раз позже")
+            return
+
     
     if not cur.execute(f"SELECT flag FROM users WHERE tg_id == {message.from_user.id}").fetchall()[0][0]:
         sts = cur.execute(f"SELECT sts FROM users WHERE tg_id == {message.from_user.id}").fetchall()[0][0]
@@ -93,7 +203,7 @@ async def start_command(message: types.Message):
 
     await message.answer("Нажмите кнопку «личный кабинет»", reply_markup = PersonalAccount)
 
-@dp.message_handler(commands=['connect_wallet'], chat_type=types.ChatType.PRIVATE)
+@dp.message_handler(commands=['connect_wallet'], state='*', chat_type=types.ChatType.PRIVATE)
 async def connect_wallet_tonkeeper(message: types.Message):
     if not cur.execute(f"SELECT tg_id FROM users WHERE tg_id == {message.from_user.id}").fetchall():
         return
@@ -101,7 +211,7 @@ async def connect_wallet_tonkeeper(message: types.Message):
     storage = database.Storage(str(message.from_user.id))
     
     # Initialize a connection using the given manifest URL and storage
-    connector = TonConnect(manifest_url='https://raw.githubusercontent.com/th1nk2w1ce/TSPC-tonconnect/main/manifest.json', storage=storage)
+    connector = TonConnect(manifest_url='https://raw.githubusercontent.com/AndreyBur/Access_control_bot/master/pytonconnect-manifest.json', storage=storage)
     # Attempt to restore the existing connection, if any
     is_connected = await connector.restore_connection()
 
@@ -114,7 +224,7 @@ async def connect_wallet_tonkeeper(message: types.Message):
     wallets_list = connector.get_wallets()
 
     # Generate a connection URL for the wallet
-    generated_url_tonkeeper = await connector.connect(wallets_list[0])
+    generated_url_tonkeeper = await connector.connect(wallets_list[1])
 
     # Create an inline keyboard markup with a button to open the connection URL
     urlkb = InlineKeyboardMarkup(row_width=1)
@@ -151,7 +261,7 @@ async def connect_wallet_tonkeeper(message: types.Message):
     # Confirm to the user that the wallet has been successfully connected
     await message.answer('Ваш кошелёк успешно подключён')
 
-    user_channel_status = await bot.get_chat_member(chat_id=-1001738673084, user_id=message.from_user.id)
+    user_channel_status = await bot.get_chat_member(chat_id=-1002111640729, user_id=message.from_user.id)
     if user_channel_status["status"] == 'left':
         await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](https://t.me/tspc_channel)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
         return
@@ -166,7 +276,7 @@ async def connect_wallet_tonkeeper(message: types.Message):
 
 @dp.callback_query_handler(text = 'check')
 async def check_subscription(call: types.CallbackQuery):
-    user_channel_status = await bot.get_chat_member(chat_id=-1001738673084, user_id=call.from_user.id)
+    user_channel_status = await bot.get_chat_member(chat_id=-1002111640729, user_id=call.from_user.id)
     if user_channel_status["status"] == 'left':
         await call.answer("Вы не подписаны на канал")
         return
@@ -174,7 +284,7 @@ async def check_subscription(call: types.CallbackQuery):
     await call.message.delete()
     await call.message.answer("Нажмите кнопку «личный кабинет»", reply_markup = PersonalAccount)
 
-@dp.message_handler(text = 'Личный кабинет👤', chat_type=types.ChatType.PRIVATE)
+@dp.message_handler(text = 'Личный кабинет👤', state='*', chat_type=types.ChatType.PRIVATE)
 async def personal_account(message: types.Message):
     if not cur.execute(f"SELECT tg_id FROM users WHERE tg_id == {message.from_user.id}").fetchall():
         return
@@ -185,7 +295,7 @@ async def personal_account(message: types.Message):
     storage = database.Storage(str(message.from_user.id))
 
     # Initialize a connection using the given manifest URL and storage
-    connector = TonConnect(manifest_url='https://raw.githubusercontent.com/th1nk2w1ce/TSPC-tonconnect/main/manifest.json', storage=storage)
+    connector = TonConnect(manifest_url='https://raw.githubusercontent.com/AndreyBur/Access_control_bot/master/pytonconnect-manifest.json', storage=storage)
     # Attempt to restore the existing connection, if any
     is_connected = await connector.restore_connection()
 
@@ -195,7 +305,7 @@ async def personal_account(message: types.Message):
         await connect_wallet_tonkeeper(message)
         return
     
-    user_channel_status = await bot.get_chat_member(chat_id=-1001738673084, user_id=message.from_user.id)
+    user_channel_status = await bot.get_chat_member(chat_id=-1002111640729, user_id=message.from_user.id)
     if user_channel_status["status"] == 'left':
         await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](https://t.me/tspc_channel)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
         return
@@ -220,6 +330,421 @@ async def personal_account(message: types.Message):
         referer = f'[{referer_name}](tg://user?id={referer})'
     
     await bot.send_message(chat_id=message.from_user.id, text=f'Рефералы первого уровня: {firts_lvl_referals}\nВсе рефералы: {all_referals}\nВас пригласил: {referer}\nБаланс STS: {sts:.2f}\nРеферальная ссылка: {link}'.replace('.', '\\.'), parse_mode='MarkdownV2')
+
+@dp.message_handler(commands=['sell_ts'], state='*', chat_type=types.ChatType.PRIVATE)
+async def sell_ts(message: types.Message):
+    if not cur.execute(f"SELECT tg_id FROM users WHERE tg_id == {message.from_user.id}").fetchall():
+        return
+
+    await message.delete()
+
+    # Create a storage instance based on the user's ID
+    storage = database.Storage(str(message.from_user.id))
+
+    # Initialize a connection using the given manifest URL and storage
+    connector = TonConnect(manifest_url='https://raw.githubusercontent.com/AndreyBur/Access_control_bot/master/pytonconnect-manifest.json', storage=storage)
+    # Attempt to restore the existing connection, if any
+    is_connected = await connector.restore_connection()
+
+    # If not connected, prompt the user to connect their wallet
+    if not is_connected:
+        await message.answer("Прежде чем начать работу с ботом подключите кошелёк")
+        await connect_wallet_tonkeeper(message)
+        return
+    
+    user_channel_status = await bot.get_chat_member(chat_id=-1002111640729, user_id=message.from_user.id)
+    if user_channel_status["status"] == 'left':
+        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](https://t.me/tspc_channel)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
+        return
+
+    ts_wallet_address = await get_wallet_address(connector.account.address, ts_jetton_minter_address)
+
+    value = ''
+    while value == '':
+        try:
+            url = f'https://tonapi.io/v2/blockchain/accounts/{ts_wallet_address}/methods/get_wallet_data'
+            value = float(requests.get(url).json()['decoded']['balance'])
+        except:
+            pass
+
+
+    await message.answer(f"Введите сколько TS перевести в STS. Ваш баланс {value / 1e9}")
+    await States.Sell_ts.set()
+
+@dp.message_handler(state=States.Sell_ts, chat_type=types.ChatType.PRIVATE)
+async def process_sell_ts(message: types.Message, state: FSMContext):
+    if not cur.execute(f"SELECT tg_id FROM users WHERE tg_id == {message.from_user.id}").fetchall():
+        return
+
+    await message.delete()
+
+    # Create a storage instance based on the user's ID
+    storage = database.Storage(str(message.from_user.id))
+
+    # Initialize a connection using the given manifest URL and storage
+    connector = TonConnect(manifest_url='https://raw.githubusercontent.com/AndreyBur/Access_control_bot/master/pytonconnect-manifest.json', storage=storage)
+    # Attempt to restore the existing connection, if any
+    is_connected = await connector.restore_connection()
+
+    # If not connected, prompt the user to connect their wallet
+    if not is_connected:
+        await message.answer("Прежде чем начать работу с ботом подключите кошелёк")
+        await connect_wallet_tonkeeper(message)
+        return
+    
+    user_channel_status = await bot.get_chat_member(chat_id=-1002111640729, user_id=message.from_user.id)
+    if user_channel_status["status"] == 'left':
+        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](https://t.me/tspc_channel)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
+        return
+
+    ts_wallet_address = await get_wallet_address(connector.account.address, ts_jetton_minter_address)
+
+    max_value = ''
+    while max_value == '':
+        try:
+            url = f'https://tonapi.io/v2/blockchain/accounts/{ts_wallet_address}/methods/get_wallet_data'
+            max_value = float(requests.get(url).json()['decoded']['balance'])
+        except:
+            pass
+
+    try:
+        value = float(message.text)
+    except:
+        await message.answer('Не корректное число')
+        return
+
+    if value > max_value / 1e9 or value <= 0:
+        await message.answer('Не корректное число')
+        return
+
+    transaction = {
+        'valid_until': int(time.time()) + 300,
+        'messages': [
+            {
+                'address': ts_wallet_address,
+                'amount': '1700000000',
+                'payload': bytes_to_b64str(begin_cell().store_uint(0x0f8a7ea5, 32).store_uint(1, 64).store_coins(value * 1e9).store_address(Address(sts_jetton_minter_address)).store_address(Address(connector.account.address)).store_uint(0, 1).store_coins(1500000000).store_uint(0, 1).end_cell().to_boc())
+            },
+        ]
+    }
+    
+    
+    try:
+        await message.answer("Подтвердите транзакцию в кошельке для дальнейшей работы с ботом")
+        await connector.send_transaction(transaction)
+    except:
+        await message.answer("Что-то пошло не так...\nПопробуйте ещё раз позже")
+        return
+
+    await state.finish()
+
+@dp.message_handler(commands=['stake_sts'], state='*', chat_type=types.ChatType.PRIVATE)
+async def stake_sts(message: types.Message):
+    if not cur.execute(f"SELECT tg_id FROM users WHERE tg_id == {message.from_user.id}").fetchall():
+        return
+
+    await message.delete()
+
+    # Create a storage instance based on the user's ID
+    storage = database.Storage(str(message.from_user.id))
+
+    # Initialize a connection using the given manifest URL and storage
+    connector = TonConnect(manifest_url='https://raw.githubusercontent.com/AndreyBur/Access_control_bot/master/pytonconnect-manifest.json', storage=storage)
+    # Attempt to restore the existing connection, if any
+    is_connected = await connector.restore_connection()
+
+    # If not connected, prompt the user to connect their wallet
+    if not is_connected:
+        await message.answer("Прежде чем начать работу с ботом подключите кошелёк")
+        await connect_wallet_tonkeeper(message)
+        return
+    
+    user_channel_status = await bot.get_chat_member(chat_id=-1002111640729, user_id=message.from_user.id)
+    if user_channel_status["status"] == 'left':
+        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](https://t.me/tspc_channel)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
+        return
+
+    sts_wallet_address = await get_wallet_address(connector.account.address, sts_jetton_minter_address)
+
+    value = ''
+    while value == '':
+        try:
+            url = f'https://tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_wallet_data'
+            value = float(requests.get(url).json()['decoded']['balance'])
+        except:
+            pass
+
+    if value / 1e9 < 20:
+        await message.answer('Недостаточно STS')
+        return
+
+    await message.answer(f"Введите сколько STS застейкать. Ваш баланс {value / 1e9}. (минимум 20)")
+    await States.Stake_sts.set()
+
+@dp.message_handler(state=States.Stake_sts, chat_type=types.ChatType.PRIVATE)
+async def process_stake_sts(message: types.Message, state: FSMContext):
+    if not cur.execute(f"SELECT tg_id FROM users WHERE tg_id == {message.from_user.id}").fetchall():
+        return
+
+    await message.delete()
+
+    # Create a storage instance based on the user's ID
+    storage = database.Storage(str(message.from_user.id))
+
+    # Initialize a connection using the given manifest URL and storage
+    connector = TonConnect(manifest_url='https://raw.githubusercontent.com/AndreyBur/Access_control_bot/master/pytonconnect-manifest.json', storage=storage)
+    # Attempt to restore the existing connection, if any
+    is_connected = await connector.restore_connection()
+
+    # If not connected, prompt the user to connect their wallet
+    if not is_connected:
+        await message.answer("Прежде чем начать работу с ботом подключите кошелёк")
+        await connect_wallet_tonkeeper(message)
+        return
+    
+    user_channel_status = await bot.get_chat_member(chat_id=-1002111640729, user_id=message.from_user.id)
+    if user_channel_status["status"] == 'left':
+        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](https://t.me/tspc_channel)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
+        return
+
+    sts_wallet_address = await get_wallet_address(connector.account.address, sts_jetton_minter_address)
+
+    max_value = ''
+    while max_value == '':
+        try:
+            url = f'https://tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_wallet_data'
+            max_value = float(requests.get(url).json()['decoded']['balance'])
+        except:
+            pass
+
+    try:
+        value = float(message.text)
+    except:
+        await message.answer('Не корректное число')
+        return
+
+    if value > max_value / 1e9 or value <= 0:
+        await message.answer('Не корректное число')
+        return
+    
+    if max_value / 1e9 < 20:
+        await message.answer('Недостаточно STS')
+        return
+
+    transaction = {
+        'valid_until': int(time.time()) + 300,
+        'messages': [
+            {
+                'address': sts_wallet_address,
+                'amount': '600000000',
+                'payload': bytes_to_b64str(begin_cell().store_uint(0x1c235de0, 32).store_uint(1, 64).store_coins(value * 1e9).end_cell().to_boc())
+            },
+        ]
+    }
+    
+    
+    try:
+        await message.answer("Подтвердите транзакцию в кошельке для дальнейшей работы с ботом")
+        await connector.send_transaction(transaction)
+    except:
+        await message.answer("Что-то пошло не так...\nПопробуйте ещё раз позже")
+        return
+
+    await state.finish()
+
+@dp.message_handler(commands=['unstake_sts'], state='*', chat_type=types.ChatType.PRIVATE)
+async def unstake_sts(message: types.Message):
+    if not cur.execute(f"SELECT tg_id FROM users WHERE tg_id == {message.from_user.id}").fetchall():
+        return
+
+    await message.delete()
+
+    # Create a storage instance based on the user's ID
+    storage = database.Storage(str(message.from_user.id))
+
+    # Initialize a connection using the given manifest URL and storage
+    connector = TonConnect(manifest_url='https://raw.githubusercontent.com/AndreyBur/Access_control_bot/master/pytonconnect-manifest.json', storage=storage)
+    # Attempt to restore the existing connection, if any
+    is_connected = await connector.restore_connection()
+
+    # If not connected, prompt the user to connect their wallet
+    if not is_connected:
+        await message.answer("Прежде чем начать работу с ботом подключите кошелёк")
+        await connect_wallet_tonkeeper(message)
+        return
+    
+    user_channel_status = await bot.get_chat_member(chat_id=-1002111640729, user_id=message.from_user.id)
+    if user_channel_status["status"] == 'left':
+        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](https://t.me/tspc_channel)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
+        return
+
+    sts_wallet_address = await get_wallet_address(connector.account.address, sts_jetton_minter_address)
+
+    value = ''
+    while value == '':
+        try:
+            url = f'https://tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_extra_data'
+            value = int(requests.get(url).json()['stack'][0]['num'], 16)
+        except:
+            pass
+
+    await message.answer(f"Введите сколько STS анстейкнуть. Ваш баланс {value / 1e9}. (в стейке должно остаться не меньше 20 или 0)")
+    await States.Unstake_sts.set()
+
+@dp.message_handler(state=States.Unstake_sts, chat_type=types.ChatType.PRIVATE)
+async def process_unstake_sts(message: types.Message, state: FSMContext):
+    if not cur.execute(f"SELECT tg_id FROM users WHERE tg_id == {message.from_user.id}").fetchall():
+        return
+
+    await message.delete()
+
+    # Create a storage instance based on the user's ID
+    storage = database.Storage(str(message.from_user.id))
+
+    # Initialize a connection using the given manifest URL and storage
+    connector = TonConnect(manifest_url='https://raw.githubusercontent.com/AndreyBur/Access_control_bot/master/pytonconnect-manifest.json', storage=storage)
+    # Attempt to restore the existing connection, if any
+    is_connected = await connector.restore_connection()
+
+    # If not connected, prompt the user to connect their wallet
+    if not is_connected:
+        await message.answer("Прежде чем начать работу с ботом подключите кошелёк")
+        await connect_wallet_tonkeeper(message)
+        return
+    
+    user_channel_status = await bot.get_chat_member(chat_id=-1002111640729, user_id=message.from_user.id)
+    if user_channel_status["status"] == 'left':
+        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](https://t.me/tspc_channel)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
+        return
+
+    sts_wallet_address = await get_wallet_address(connector.account.address, sts_jetton_minter_address)
+
+    max_value = ''
+    while max_value == '':
+        try:
+            url = f'https://tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_extra_data'
+            max_value = int(requests.get(url).json()['stack'][0]['num'], 16)
+        except:
+            pass
+
+    try:
+        value = float(message.text)
+    except:
+        await message.answer('Не корректное число')
+        return
+
+    if value > max_value / 1e9 or value <= 0:
+        await message.answer('Не корректное число')
+        return
+    
+    if max_value / 1e9 - value < 20 and max_value / 1e9 - value != 0:
+        await message.answer('Не корректное число')
+        return
+
+    transaction = {
+        'valid_until': int(time.time()) + 300,
+        'messages': [
+            {
+                'address': sts_wallet_address,
+                'amount': '200000000',
+                'payload': bytes_to_b64str(begin_cell().store_uint(0x48e9880f, 32).store_uint(1, 64).store_coins(value * 1e9).end_cell().to_boc())
+            },
+        ]
+    }
+    
+    
+    try:
+        await message.answer("Подтвердите транзакцию в кошельке для дальнейшей работы с ботом")
+        await connector.send_transaction(transaction)
+    except:
+        await message.answer("Что-то пошло не так...\nПопробуйте ещё раз позже")
+        return
+
+    await state.finish()
+
+@dp.message_handler(commands=['buy_ts'], state='*', chat_type=types.ChatType.PRIVATE)
+async def buy_ts(message: types.Message):
+    if not cur.execute(f"SELECT tg_id FROM users WHERE tg_id == {message.from_user.id}").fetchall():
+        return
+
+    await message.delete()
+
+    # Create a storage instance based on the user's ID
+    storage = database.Storage(str(message.from_user.id))
+
+    # Initialize a connection using the given manifest URL and storage
+    connector = TonConnect(manifest_url='https://raw.githubusercontent.com/AndreyBur/Access_control_bot/master/pytonconnect-manifest.json', storage=storage)
+    # Attempt to restore the existing connection, if any
+    is_connected = await connector.restore_connection()
+
+    # If not connected, prompt the user to connect their wallet
+    if not is_connected:
+        await message.answer("Прежде чем начать работу с ботом подключите кошелёк")
+        await connect_wallet_tonkeeper(message)
+        return
+    
+    user_channel_status = await bot.get_chat_member(chat_id=-1002111640729, user_id=message.from_user.id)
+    if user_channel_status["status"] == 'left':
+        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](https://t.me/tspc_channel)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
+        return
+
+
+    await message.answer(f"Введите сколько TS купить.")
+    await States.Buy_ts.set()
+
+@dp.message_handler(state=States.Buy_ts, chat_type=types.ChatType.PRIVATE)
+async def process_buy_ts(message: types.Message, state: FSMContext):
+    if not cur.execute(f"SELECT tg_id FROM users WHERE tg_id == {message.from_user.id}").fetchall():
+        return
+
+    await message.delete()
+
+    # Create a storage instance based on the user's ID
+    storage = database.Storage(str(message.from_user.id))
+
+    # Initialize a connection using the given manifest URL and storage
+    connector = TonConnect(manifest_url='https://raw.githubusercontent.com/AndreyBur/Access_control_bot/master/pytonconnect-manifest.json', storage=storage)
+    # Attempt to restore the existing connection, if any
+    is_connected = await connector.restore_connection()
+
+    # If not connected, prompt the user to connect their wallet
+    if not is_connected:
+        await message.answer("Прежде чем начать работу с ботом подключите кошелёк")
+        await connect_wallet_tonkeeper(message)
+        return
+    
+    user_channel_status = await bot.get_chat_member(chat_id=-1002111640729, user_id=message.from_user.id)
+    if user_channel_status["status"] == 'left':
+        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](https://t.me/tspc_channel)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
+        return
+
+    try:
+        value = float(message.text)
+    except:
+        await message.answer('Не корректное число')
+        return
+
+    transaction = {
+        'valid_until': int(time.time()) + 300,
+        'messages': [
+            {
+                'address': ts_jetton_minter_address,
+                'amount': f'{value * 1e9}',
+                'payload': bytes_to_b64str(begin_cell().store_uint(0x785c33da, 32).store_uint(1, 64).end_cell().to_boc())
+            },
+        ]
+    }
+    
+    
+    try:
+        await message.answer("Подтвердите транзакцию в кошельке для дальнейшей работы с ботом")
+        await connector.send_transaction(transaction)
+    except:
+        await message.answer("Что-то пошло не так...\nПопробуйте ещё раз позже")
+        return
+
+    await state.finish()
+
 
 # Entry point for the application; starts polling for updates from the Telegram API
 if __name__ == '__main__':
