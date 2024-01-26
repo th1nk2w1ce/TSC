@@ -58,7 +58,8 @@ async def get_wallet_address(address, minter):
     try:
         response = requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()['decoded']['jetton_wallet_address']
         return response
-    except:
+    except Exception as e:
+        print(e)
         return None
 
 @dp.message_handler(commands=['start'], state='*', chat_type=types.ChatType.PRIVATE)
@@ -85,7 +86,8 @@ async def start_command(message: types.Message):
                         con.commit()
                         depth += 1
                         user = referer
-                except:
+                except Exception as e:
+                    print(e)
                     return
             else:
                 await message.answer("Не действительная ссылка")
@@ -136,7 +138,8 @@ async def start_command(message: types.Message):
         ts_referer = requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()
         url = f'https://tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_extra_data'
         sts_referer = requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()
-    except:
+    except Exception as e:
+        print(e)
         await message.answer("Что-то пошло не так...\nПопробуйте ещё раз позже")
         return
 
@@ -190,7 +193,8 @@ async def start_command(message: types.Message):
         try:
             await message.answer("Подтвердите транзакцию в кошельке для дальнейшей работы с ботом")
             await connector.send_transaction(transaction)
-        except:
+        except Exception as e:
+            print(e)
             await message.answer("Что-то пошло не так...\nПопробуйте ещё раз позже")
             return
 
@@ -364,7 +368,8 @@ async def sell_ts(message: types.Message):
         try:
             url = f'https://tonapi.io/v2/blockchain/accounts/{ts_wallet_address}/methods/get_wallet_data'
             value = float(requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()['decoded']['balance'])
-        except:
+        except Exception as e:
+            print(e)
             pass
 
 
@@ -404,12 +409,14 @@ async def process_sell_ts(message: types.Message, state: FSMContext):
         try:
             url = f'https://tonapi.io/v2/blockchain/accounts/{ts_wallet_address}/methods/get_wallet_data'
             max_value = float(requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()['decoded']['balance'])
-        except:
+        except Exception as e:
+            print(e)
             pass
 
     try:
         value = float(message.text)
-    except:
+    except Exception as e:
+        print(e)
         await message.answer('Не корректное число')
         return
 
@@ -432,7 +439,8 @@ async def process_sell_ts(message: types.Message, state: FSMContext):
     try:
         await message.answer("Подтвердите транзакцию в кошельке для дальнейшей работы с ботом")
         await connector.send_transaction(transaction)
-    except:
+    except Exception as e:
+        print(e)
         await message.answer("Что-то пошло не так...\nПопробуйте ещё раз позже")
         return
 
@@ -471,7 +479,8 @@ async def stake_sts(message: types.Message):
         try:
             url = f'https://tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_wallet_data'
             value = float(requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()['decoded']['balance'])
-        except:
+        except Exception as e:
+            print(e)
             pass
 
     if value / 1e9 < 20:
@@ -514,12 +523,14 @@ async def process_stake_sts(message: types.Message, state: FSMContext):
         try:
             url = f'https://tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_wallet_data'
             max_value = float(requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()['decoded']['balance'])
-        except:
+        except Exception as e:
+            print(e)
             pass
 
     try:
         value = float(message.text)
-    except:
+    except Exception as e:
+        print(e)
         await message.answer('Не корректное число')
         return
 
@@ -546,7 +557,8 @@ async def process_stake_sts(message: types.Message, state: FSMContext):
     try:
         await message.answer("Подтвердите транзакцию в кошельке для дальнейшей работы с ботом")
         await connector.send_transaction(transaction)
-    except:
+    except Exception as e:
+        print(e)
         await message.answer("Что-то пошло не так...\nПопробуйте ещё раз позже")
         return
 
@@ -585,7 +597,8 @@ async def unstake_sts(message: types.Message):
         try:
             url = f'https://tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_extra_data'
             value = int(requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()['stack'][0]['num'], 16)
-        except:
+        except Exception as e:
+            print(e)
             pass
 
     await message.answer(f"Введите сколько STS анстейкнуть. Ваш баланс {value / 1e9}. (в стейке должно остаться не меньше 20 или 0)")
@@ -624,12 +637,14 @@ async def process_unstake_sts(message: types.Message, state: FSMContext):
         try:
             url = f'https://tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_extra_data'
             max_value = int(requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()['stack'][0]['num'], 16)
-        except:
+        except Exception as e:
+            print(e)
             pass
 
     try:
         value = float(message.text)
-    except:
+    except Exception as e:
+        print(e)
         await message.answer('Не корректное число')
         return
 
@@ -656,7 +671,8 @@ async def process_unstake_sts(message: types.Message, state: FSMContext):
     try:
         await message.answer("Подтвердите транзакцию в кошельке для дальнейшей работы с ботом")
         await connector.send_transaction(transaction)
-    except:
+    except Exception as e:
+        print(e)
         await message.answer("Что-то пошло не так...\nПопробуйте ещё раз позже")
         return
 
@@ -720,7 +736,8 @@ async def process_buy_ts(message: types.Message, state: FSMContext):
 
     try:
         value = float(message.text)
-    except:
+    except Exception as e:
+        print(e)
         await message.answer('Не корректное число')
         return
 
@@ -739,7 +756,8 @@ async def process_buy_ts(message: types.Message, state: FSMContext):
     try:
         await message.answer("Подтвердите транзакцию в кошельке для дальнейшей работы с ботом")
         await connector.send_transaction(transaction)
-    except:
+    except Exception as e:
+        print(e)
         await message.answer("Что-то пошло не так...\nПопробуйте ещё раз позже")
         return
 
