@@ -35,6 +35,7 @@ cur.execute('''CREATE TABLE IF NOT EXISTS "users" (
     "flag"  BOOLEAN DEFAULT (false),
     "referer" INTEGER,
     "all_referals" INTEGER DEFAULT (0)
+    "referer_address"	TEXT
 )''')
 
 bot = Bot(token=api_token)
@@ -73,6 +74,21 @@ async def start_command(message: types.Message):
                     sts = cur.execute(f"SELECT sts FROM users WHERE tg_id == {message.text.split()[1]}").fetchall()[0][0]
                     cur.execute(f"UPDATE users SET referer = {message.text.split()[1]} WHERE tg_id = {message.from_user.id}")
                     cur.execute(f"UPDATE users SET sts = {sts + 0.2} WHERE tg_id = {message.text.split()[1]}")
+                    con.commit()
+
+                    storage_referer = database.Storage(str(cur.execute(f"SELECT referer FROM users WHERE tg_id == {message.from_user.id}").fetchall()[0][0]))
+
+                    connector_referer = TonConnect(manifest_url='https://raw.githubusercontent.com/AndreyBur/Access_control_bot/master/pytonconnect-manifest.json', storage=storage_referer)
+                    # Attempt to restore the existing connection, if any
+                    is_connected = await connector_referer.restore_connection()
+
+                    if not is_connected:
+                        await message.answer("Что-то пошло не так...\nПопробуйте ещё раз позже")
+                        return
+
+                    referer_address = connector_referer.account.address
+
+                    cur.execute(f'UPDATE users SET referer_address = {message.text.split()[1]} WHERE tg_id = "{referer_address}"')
                     con.commit()
 
                     user = message.from_user.id
@@ -120,17 +136,7 @@ async def start_command(message: types.Message):
     sts_referer = ''
     ts_referer = ''
 
-    storage_referer = database.Storage(str(cur.execute(f"SELECT referer FROM users WHERE tg_id == {message.from_user.id}").fetchall()[0][0]))
-
-    connector_referer = TonConnect(manifest_url='https://raw.githubusercontent.com/AndreyBur/Access_control_bot/master/pytonconnect-manifest.json', storage=storage_referer)
-    # Attempt to restore the existing connection, if any
-    is_connected = await connector_referer.restore_connection()
-
-    if not is_connected:
-        await message.answer("Что-то пошло не так...\nПопробуйте ещё раз позже")
-        return
-
-    referer_address = connector_referer.account.address
+    referer_address = cur.execute(f"SELECT referer_address FROM users WHERE tg_id == {message.text.split()[1]}").fetchall()[0][0]
 
     try:
         await asyncio.sleep(5)
