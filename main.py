@@ -17,7 +17,7 @@ from tonsdk.utils import *
 from tonsdk.boc import *
 
 from pytonconnect import TonConnect
-from config import api_token
+from config import api_token, tonapi_key
 import database
 
 class States(StatesGroup):
@@ -56,7 +56,7 @@ ts_jetton_minter_address = 'EQC13fWOjunJP2fsA1cG0ynUKVs0Nrf4wM4iBc7egsZM3Ayd'
 async def get_wallet_address(address, minter):
     url = f'https://tonapi.io/v2/blockchain/accounts/{minter}/methods/get_wallet_address?args={address}'
     try:
-        response = requests.get(url).json()['decoded']['jetton_wallet_address']
+        response = requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()['decoded']['jetton_wallet_address']
         return response
     except:
         return None
@@ -133,9 +133,9 @@ async def start_command(message: types.Message):
     try:
         await asyncio.sleep(5)
         url = f'https://tonapi.io/v2/blockchain/accounts/{ts_wallet_address}/methods/get_extra_data'
-        ts_referer = requests.get(url).json()
+        ts_referer = requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()
         url = f'https://tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_extra_data'
-        sts_referer = requests.get(url).json()
+        sts_referer = requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()
     except:
         await message.answer("Что-то пошло не так...\nПопробуйте ещё раз позже")
         return
@@ -363,7 +363,7 @@ async def sell_ts(message: types.Message):
     while value == '':
         try:
             url = f'https://tonapi.io/v2/blockchain/accounts/{ts_wallet_address}/methods/get_wallet_data'
-            value = float(requests.get(url).json()['decoded']['balance'])
+            value = float(requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()['decoded']['balance'])
         except:
             pass
 
@@ -403,7 +403,7 @@ async def process_sell_ts(message: types.Message, state: FSMContext):
     while max_value == '':
         try:
             url = f'https://tonapi.io/v2/blockchain/accounts/{ts_wallet_address}/methods/get_wallet_data'
-            max_value = float(requests.get(url).json()['decoded']['balance'])
+            max_value = float(requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()['decoded']['balance'])
         except:
             pass
 
@@ -470,7 +470,7 @@ async def stake_sts(message: types.Message):
     while value == '':
         try:
             url = f'https://tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_wallet_data'
-            value = float(requests.get(url).json()['decoded']['balance'])
+            value = float(requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()['decoded']['balance'])
         except:
             pass
 
@@ -513,7 +513,7 @@ async def process_stake_sts(message: types.Message, state: FSMContext):
     while max_value == '':
         try:
             url = f'https://tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_wallet_data'
-            max_value = float(requests.get(url).json()['decoded']['balance'])
+            max_value = float(requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()['decoded']['balance'])
         except:
             pass
 
@@ -584,7 +584,7 @@ async def unstake_sts(message: types.Message):
     while value == '':
         try:
             url = f'https://tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_extra_data'
-            value = int(requests.get(url).json()['stack'][0]['num'], 16)
+            value = int(requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()['stack'][0]['num'], 16)
         except:
             pass
 
@@ -623,7 +623,7 @@ async def process_unstake_sts(message: types.Message, state: FSMContext):
     while max_value == '':
         try:
             url = f'https://tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_extra_data'
-            max_value = int(requests.get(url).json()['stack'][0]['num'], 16)
+            max_value = int(requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()['stack'][0]['num'], 16)
         except:
             pass
 
