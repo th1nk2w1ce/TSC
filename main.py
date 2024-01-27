@@ -149,7 +149,7 @@ async def start_command(message: types.Message):
     referer_address = cur.execute(f"SELECT referer_address FROM users WHERE tg_id == {message.from_user.id}").fetchall()[0][0]
 
     try:
-        await asyncio.sleep(5)
+        await asyncio.sleep(0.5)
         url = f'https://tonapi.io/v2/blockchain/accounts/{ts_wallet_address}/methods/get_extra_data'
         ts_referer = requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()
         url = f'https://tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_extra_data'
@@ -266,7 +266,7 @@ async def connect_wallet_tonkeeper(message: types.Message):
 
     # Check for a successful connection in a loop, with a maximum of 300 iterations (300 seconds)
     for i in range(300):
-        await asyncio.sleep(1)
+        await asyncio.sleep(0.5)
         if connector.connected:
             if connector.account.address:
                 address = Address(connector.account.address).to_string(True, True, True)
