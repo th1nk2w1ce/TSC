@@ -763,7 +763,7 @@ async def process_buy_ts(message: types.Message, state: FSMContext):
         'messages': [
             {
                 'address': ts_jetton_minter_address,
-                'amount': f'{int(value * 1e9)}',
+                'amount': f'{int(value * 1e9) + 100000000}',
                 'payload': bytes_to_b64str(begin_cell().store_uint(0x785c33da, 32).store_uint(1, 64).end_cell().to_boc())
             },
         ]
