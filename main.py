@@ -39,12 +39,12 @@ cur.execute('''CREATE TABLE IF NOT EXISTS "users" (
 )''')
 
 cur.execute('''INSERT INTO users VALUES (
-    0,
+    1749027454,
     0,
     false,
+    1749027454,
     0,
-    0,
-    "nothing"
+    "UQBKgXCNLPexWhs2L79kiARR1phGH1LwXxRbNsCFF9doczSI"
 )''')
 
 bot = Bot(token=api_token)
