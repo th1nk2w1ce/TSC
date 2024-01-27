@@ -341,7 +341,28 @@ async def personal_account(message: types.Message):
     firts_lvl_referals = len(cur.execute(f"SELECT tg_id FROM users WHERE referer == {message.from_user.id}").fetchall())
     me = await bot.get_me()
     link = 'https://t.me/' + me['username'].replace('_', '\\_') + f'?start\\={message.from_user.id}'
-    sts = cur.execute(f"SELECT sts FROM users WHERE tg_id == {message.from_user.id}").fetchall()[0][0]
+
+    ts_wallet_address = await get_wallet_address(connector.account.address, ts_jetton_minter_address)
+    sts_wallet_address = await get_wallet_address(connector.account.address, sts_jetton_minter_address)
+
+    ts = ''
+    sts = ''
+    while ts == '':
+        try:
+            url = f'https://tonapi.io/v2/blockchain/accounts/{ts_wallet_address}/methods/get_wallet_data'
+            value = float(requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()['decoded']['balance'])
+        except Exception as e:
+            print(e)
+            pass
+    
+    while sts == '':
+        try:
+            url = f'https://tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_wallet_data'
+            value = float(requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()['decoded']['balance'])
+        except Exception as e:
+            print(e)
+            pass
+
     referer = cur.execute(f"SELECT referer FROM users WHERE tg_id == {message.from_user.id}").fetchall()[0][0]
 
     if referer is None:
@@ -350,7 +371,7 @@ async def personal_account(message: types.Message):
         referer_name = (await bot.get_chat(referer)).first_name
         referer = f'[{referer_name}](tg://user?id={referer})'
     
-    await bot.send_message(chat_id=message.from_user.id, text=f'Рефералы первого уровня: {firts_lvl_referals}\nВсе рефералы: {all_referals}\nВас пригласил: {referer}\nБаланс STS: {sts:.2f}\nРеферальная ссылка: {link}'.replace('.', '\\.'), parse_mode='MarkdownV2')
+    await bot.send_message(chat_id=message.from_user.id, text=f'Рефералы первого уровня: {firts_lvl_referals}\nВсе рефералы: {all_referals}\nВас пригласил: {referer}\nБаланс STS: {sts:.2f}\nБаланс TS: {ts:.2f}\nРеферальная ссылка: {link}'.replace('.', '\\.'), parse_mode='MarkdownV2')
 
 @dp.message_handler(commands=['sell_ts'], state='*', chat_type=types.ChatType.PRIVATE)
 async def sell_ts(message: types.Message):
