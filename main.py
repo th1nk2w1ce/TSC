@@ -34,7 +34,7 @@ cur.execute('''CREATE TABLE IF NOT EXISTS "users" (
     "sts"   INTEGER DEFAULT (0),
     "flag"  BOOLEAN DEFAULT (false),
     "referer" INTEGER,
-    "all_referals" INTEGER DEFAULT (0)
+    "all_referals" INTEGER DEFAULT (0),
     "referer_address"	TEXT
 )''')
 
