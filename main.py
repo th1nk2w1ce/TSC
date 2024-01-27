@@ -98,7 +98,7 @@ async def start_command(message: types.Message):
 
                     referer_address = connector_referer.account.address
 
-                    cur.execute(f'UPDATE users SET referer_address = {referer_address} WHERE tg_id = "{message.text.split()[1]}"')
+                    cur.execute(f'UPDATE users SET referer_address = "{referer_address}" WHERE tg_id = {message.text.split()[1]}')
                     con.commit()
 
                     user = message.from_user.id
@@ -152,6 +152,7 @@ async def start_command(message: types.Message):
         await asyncio.sleep(0.5)
         url = f'https://tonapi.io/v2/blockchain/accounts/{ts_wallet_address}/methods/get_extra_data'
         ts_referer = requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()
+        await asyncio.sleep(0.5)
         url = f'https://tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_extra_data'
         sts_referer = requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()
     except Exception as e:
