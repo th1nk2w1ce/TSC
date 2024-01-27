@@ -98,7 +98,7 @@ async def start_command(message: types.Message):
 
                     referer_address = connector_referer.account.address
 
-                    cur.execute(f'UPDATE users SET referer_address = {message.text.split()[1]} WHERE tg_id = "{referer_address}"')
+                    cur.execute(f'UPDATE users SET referer_address = {referer_address} WHERE tg_id = "{message.text.split()[1]}"')
                     con.commit()
 
                     user = message.from_user.id
