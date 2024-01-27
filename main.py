@@ -105,7 +105,7 @@ async def start_command(message: types.Message):
                     depth = 1
                     while depth <= 12:
                         referer = cur.execute(f"SELECT referer FROM users WHERE tg_id == {user}").fetchall()[0][0]
-                        if referer is None:
+                        if referer is None or referer == user:
                             break
                         all_referals = cur.execute(f"SELECT all_referals FROM users WHERE tg_id == {referer}").fetchall()[0][0]
                         cur.execute(f"UPDATE users SET all_referals = {all_referals + 1} WHERE tg_id = {referer}")
