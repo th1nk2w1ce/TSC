@@ -561,7 +561,7 @@ async def process_sell_ts(message: types.Message, state: FSMContext):
             {
                 'address': ts_wallet_address,
                 'amount': '1700000000',
-                'payload': bytes_to_b64str(begin_cell().store_uint(0x0f8a7ea5, 32).store_uint(1, 64).store_coins(value * 1e9).store_address(Address(sts_jetton_minter_address)).store_address(Address(connector.account.address)).store_uint(0, 1).store_coins(1500000000).store_uint(0, 1).end_cell().to_boc())
+                'payload': bytes_to_b64str(begin_cell().store_uint(0x0f8a7ea5, 32).store_uint(1, 64).store_coins(int(value * 1e9)).store_address(Address(sts_jetton_minter_address)).store_address(Address(connector.account.address)).store_uint(0, 1).store_coins(1500000000).store_uint(0, 1).end_cell().to_boc())
             },
         ]
     }
@@ -635,7 +635,7 @@ async def process_stake_sts(message: types.Message, state: FSMContext):
             {
                 'address': sts_wallet_address,
                 'amount': '600000000',
-                'payload': bytes_to_b64str(begin_cell().store_uint(0x1c235de0, 32).store_uint(1, 64).store_coins(value * 1e9).end_cell().to_boc())
+                'payload': bytes_to_b64str(begin_cell().store_uint(0x1c235de0, 32).store_uint(1, 64).store_coins(int(value * 1e9)).end_cell().to_boc())
             },
         ]
     }
@@ -709,7 +709,7 @@ async def process_unstake_sts(message: types.Message, state: FSMContext):
             {
                 'address': sts_wallet_address,
                 'amount': '200000000',
-                'payload': bytes_to_b64str(begin_cell().store_uint(0x48e9880f, 32).store_uint(1, 64).store_coins(value * 1e9).end_cell().to_boc())
+                'payload': bytes_to_b64str(begin_cell().store_uint(0x48e9880f, 32).store_uint(1, 64).store_coins(int(value * 1e9)).end_cell().to_boc())
             },
         ]
     }
@@ -763,7 +763,7 @@ async def process_buy_ts(message: types.Message, state: FSMContext):
         'messages': [
             {
                 'address': ts_jetton_minter_address,
-                'amount': f'{value * 1e9}',
+                'amount': f'{int(value * 1e9)}',
                 'payload': bytes_to_b64str(begin_cell().store_uint(0x785c33da, 32).store_uint(1, 64).end_cell().to_boc())
             },
         ]
