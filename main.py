@@ -38,6 +38,15 @@ cur.execute('''CREATE TABLE IF NOT EXISTS "users" (
     "referer_address"	TEXT
 )''')
 
+cur.execute('''INSERT INTO users VALUES (
+    0,
+    0,
+    false,
+    0,
+    0,
+    "nothing"
+)''')
+
 bot = Bot(token=api_token)
 dp = Dispatcher(bot, storage=MemoryStorage())
 
