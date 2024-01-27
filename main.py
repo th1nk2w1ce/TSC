@@ -350,7 +350,7 @@ async def personal_account(message: types.Message):
     while ts == '':
         try:
             url = f'https://tonapi.io/v2/blockchain/accounts/{ts_wallet_address}/methods/get_wallet_data'
-            value = float(requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()['decoded']['balance'])
+            ts = float(requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()['decoded']['balance'])
         except Exception as e:
             print(e)
             pass
@@ -358,7 +358,7 @@ async def personal_account(message: types.Message):
     while sts == '':
         try:
             url = f'https://tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_wallet_data'
-            value = float(requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()['decoded']['balance'])
+            sts = float(requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()['decoded']['balance'])
         except Exception as e:
             print(e)
             pass
