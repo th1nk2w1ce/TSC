@@ -146,7 +146,7 @@ async def start_command(message: types.Message):
     sts_referer = ''
     ts_referer = ''
 
-    referer_address = cur.execute(f"SELECT referer_address FROM users WHERE tg_id == {message.text.split()[1]}").fetchall()[0][0]
+    referer_address = cur.execute(f"SELECT referer_address FROM users WHERE tg_id == {message.from_user.id}").fetchall()[0][0]
 
     try:
         await asyncio.sleep(5)
