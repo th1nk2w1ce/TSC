@@ -393,6 +393,120 @@ async def sell_ts(message: types.Message):
     await message.answer(f"Введите сколько TS перевести в STS. Ваш баланс {value / 1e9}")
     await States.Sell_ts.set()
 
+@dp.message_handler(commands=['buy_ts'], state='*', chat_type=types.ChatType.PRIVATE)
+async def buy_ts(message: types.Message):
+    if not cur.execute(f"SELECT tg_id FROM users WHERE tg_id == {message.from_user.id}").fetchall():
+        return
+
+    await message.delete()
+
+    # Create a storage instance based on the user's ID
+    storage = database.Storage(str(message.from_user.id))
+
+    # Initialize a connection using the given manifest URL and storage
+    connector = TonConnect(manifest_url='https://raw.githubusercontent.com/AndreyBur/Access_control_bot/master/pytonconnect-manifest.json', storage=storage)
+    # Attempt to restore the existing connection, if any
+    is_connected = await connector.restore_connection()
+
+    # If not connected, prompt the user to connect their wallet
+    if not is_connected:
+        await message.answer("Прежде чем начать работу с ботом подключите кошелёк")
+        await connect_wallet_tonkeeper(message)
+        return
+    
+    user_channel_status = await bot.get_chat_member(chat_id=-1002133374530, user_id=message.from_user.id)
+    if user_channel_status["status"] == 'left':
+        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](https://t.me/+mhOR-8h28xg1ZTli)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
+        return
+
+
+    await message.answer(f"Введите сколько TS купить.")
+    await States.Buy_ts.set()
+
+@dp.message_handler(commands=['stake_sts'], state='*', chat_type=types.ChatType.PRIVATE)
+async def stake_sts(message: types.Message):
+    if not cur.execute(f"SELECT tg_id FROM users WHERE tg_id == {message.from_user.id}").fetchall():
+        return
+
+    await message.delete()
+
+    # Create a storage instance based on the user's ID
+    storage = database.Storage(str(message.from_user.id))
+
+    # Initialize a connection using the given manifest URL and storage
+    connector = TonConnect(manifest_url='https://raw.githubusercontent.com/AndreyBur/Access_control_bot/master/pytonconnect-manifest.json', storage=storage)
+    # Attempt to restore the existing connection, if any
+    is_connected = await connector.restore_connection()
+
+    # If not connected, prompt the user to connect their wallet
+    if not is_connected:
+        await message.answer("Прежде чем начать работу с ботом подключите кошелёк")
+        await connect_wallet_tonkeeper(message)
+        return
+    
+    user_channel_status = await bot.get_chat_member(chat_id=-1002133374530, user_id=message.from_user.id)
+    if user_channel_status["status"] == 'left':
+        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](https://t.me/+mhOR-8h28xg1ZTli)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
+        return
+
+    sts_wallet_address = await get_wallet_address(connector.account.address, sts_jetton_minter_address)
+
+    value = ''
+    while value == '':
+        try:
+            url = f'https://tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_wallet_data'
+            value = float(requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()['decoded']['balance'])
+        except Exception as e:
+            print(e)
+            pass
+
+    if value / 1e9 < 20:
+        await message.answer('Недостаточно STS')
+        return
+
+    await message.answer(f"Введите сколько STS застейкать. Ваш баланс {value / 1e9}. (минимум 20)")
+    await States.Stake_sts.set()
+
+@dp.message_handler(commands=['unstake_sts'], state='*', chat_type=types.ChatType.PRIVATE)
+async def unstake_sts(message: types.Message):
+    if not cur.execute(f"SELECT tg_id FROM users WHERE tg_id == {message.from_user.id}").fetchall():
+        return
+
+    await message.delete()
+
+    # Create a storage instance based on the user's ID
+    storage = database.Storage(str(message.from_user.id))
+
+    # Initialize a connection using the given manifest URL and storage
+    connector = TonConnect(manifest_url='https://raw.githubusercontent.com/AndreyBur/Access_control_bot/master/pytonconnect-manifest.json', storage=storage)
+    # Attempt to restore the existing connection, if any
+    is_connected = await connector.restore_connection()
+
+    # If not connected, prompt the user to connect their wallet
+    if not is_connected:
+        await message.answer("Прежде чем начать работу с ботом подключите кошелёк")
+        await connect_wallet_tonkeeper(message)
+        return
+    
+    user_channel_status = await bot.get_chat_member(chat_id=-1002133374530, user_id=message.from_user.id)
+    if user_channel_status["status"] == 'left':
+        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](https://t.me/+mhOR-8h28xg1ZTli)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
+        return
+
+    sts_wallet_address = await get_wallet_address(connector.account.address, sts_jetton_minter_address)
+
+    value = ''
+    while value == '':
+        try:
+            url = f'https://tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_extra_data'
+            value = int(requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()['stack'][0]['num'], 16)
+        except Exception as e:
+            print(e)
+            pass
+
+    await message.answer(f"Введите сколько STS анстейкнуть. Ваш баланс {value / 1e9}. (в стейке должно остаться не меньше 20 или 0)")
+    await States.Unstake_sts.set()
+
 @dp.message_handler(state=States.Sell_ts, chat_type=types.ChatType.PRIVATE)
 async def process_sell_ts(message: types.Message, state: FSMContext):
     if not cur.execute(f"SELECT tg_id FROM users WHERE tg_id == {message.from_user.id}").fetchall():
@@ -462,50 +576,6 @@ async def process_sell_ts(message: types.Message, state: FSMContext):
         return
 
     await state.finish()
-
-@dp.message_handler(commands=['stake_sts'], state='*', chat_type=types.ChatType.PRIVATE)
-async def stake_sts(message: types.Message):
-    if not cur.execute(f"SELECT tg_id FROM users WHERE tg_id == {message.from_user.id}").fetchall():
-        return
-
-    await message.delete()
-
-    # Create a storage instance based on the user's ID
-    storage = database.Storage(str(message.from_user.id))
-
-    # Initialize a connection using the given manifest URL and storage
-    connector = TonConnect(manifest_url='https://raw.githubusercontent.com/AndreyBur/Access_control_bot/master/pytonconnect-manifest.json', storage=storage)
-    # Attempt to restore the existing connection, if any
-    is_connected = await connector.restore_connection()
-
-    # If not connected, prompt the user to connect their wallet
-    if not is_connected:
-        await message.answer("Прежде чем начать работу с ботом подключите кошелёк")
-        await connect_wallet_tonkeeper(message)
-        return
-    
-    user_channel_status = await bot.get_chat_member(chat_id=-1002133374530, user_id=message.from_user.id)
-    if user_channel_status["status"] == 'left':
-        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](https://t.me/+mhOR-8h28xg1ZTli)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
-        return
-
-    sts_wallet_address = await get_wallet_address(connector.account.address, sts_jetton_minter_address)
-
-    value = ''
-    while value == '':
-        try:
-            url = f'https://tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_wallet_data'
-            value = float(requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()['decoded']['balance'])
-        except Exception as e:
-            print(e)
-            pass
-
-    if value / 1e9 < 20:
-        await message.answer('Недостаточно STS')
-        return
-
-    await message.answer(f"Введите сколько STS застейкать. Ваш баланс {value / 1e9}. (минимум 20)")
-    await States.Stake_sts.set()
 
 @dp.message_handler(state=States.Stake_sts, chat_type=types.ChatType.PRIVATE)
 async def process_stake_sts(message: types.Message, state: FSMContext):
@@ -581,46 +651,6 @@ async def process_stake_sts(message: types.Message, state: FSMContext):
 
     await state.finish()
 
-@dp.message_handler(commands=['unstake_sts'], state='*', chat_type=types.ChatType.PRIVATE)
-async def unstake_sts(message: types.Message):
-    if not cur.execute(f"SELECT tg_id FROM users WHERE tg_id == {message.from_user.id}").fetchall():
-        return
-
-    await message.delete()
-
-    # Create a storage instance based on the user's ID
-    storage = database.Storage(str(message.from_user.id))
-
-    # Initialize a connection using the given manifest URL and storage
-    connector = TonConnect(manifest_url='https://raw.githubusercontent.com/AndreyBur/Access_control_bot/master/pytonconnect-manifest.json', storage=storage)
-    # Attempt to restore the existing connection, if any
-    is_connected = await connector.restore_connection()
-
-    # If not connected, prompt the user to connect their wallet
-    if not is_connected:
-        await message.answer("Прежде чем начать работу с ботом подключите кошелёк")
-        await connect_wallet_tonkeeper(message)
-        return
-    
-    user_channel_status = await bot.get_chat_member(chat_id=-1002133374530, user_id=message.from_user.id)
-    if user_channel_status["status"] == 'left':
-        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](https://t.me/+mhOR-8h28xg1ZTli)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
-        return
-
-    sts_wallet_address = await get_wallet_address(connector.account.address, sts_jetton_minter_address)
-
-    value = ''
-    while value == '':
-        try:
-            url = f'https://tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_extra_data'
-            value = int(requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()['stack'][0]['num'], 16)
-        except Exception as e:
-            print(e)
-            pass
-
-    await message.answer(f"Введите сколько STS анстейкнуть. Ваш баланс {value / 1e9}. (в стейке должно остаться не меньше 20 или 0)")
-    await States.Unstake_sts.set()
-
 @dp.message_handler(state=States.Unstake_sts, chat_type=types.ChatType.PRIVATE)
 async def process_unstake_sts(message: types.Message, state: FSMContext):
     if not cur.execute(f"SELECT tg_id FROM users WHERE tg_id == {message.from_user.id}").fetchall():
@@ -694,36 +724,6 @@ async def process_unstake_sts(message: types.Message, state: FSMContext):
         return
 
     await state.finish()
-
-@dp.message_handler(commands=['buy_ts'], state='*', chat_type=types.ChatType.PRIVATE)
-async def buy_ts(message: types.Message):
-    if not cur.execute(f"SELECT tg_id FROM users WHERE tg_id == {message.from_user.id}").fetchall():
-        return
-
-    await message.delete()
-
-    # Create a storage instance based on the user's ID
-    storage = database.Storage(str(message.from_user.id))
-
-    # Initialize a connection using the given manifest URL and storage
-    connector = TonConnect(manifest_url='https://raw.githubusercontent.com/AndreyBur/Access_control_bot/master/pytonconnect-manifest.json', storage=storage)
-    # Attempt to restore the existing connection, if any
-    is_connected = await connector.restore_connection()
-
-    # If not connected, prompt the user to connect their wallet
-    if not is_connected:
-        await message.answer("Прежде чем начать работу с ботом подключите кошелёк")
-        await connect_wallet_tonkeeper(message)
-        return
-    
-    user_channel_status = await bot.get_chat_member(chat_id=-1002133374530, user_id=message.from_user.id)
-    if user_channel_status["status"] == 'left':
-        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](https://t.me/+mhOR-8h28xg1ZTli)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
-        return
-
-
-    await message.answer(f"Введите сколько TS купить.")
-    await States.Buy_ts.set()
 
 @dp.message_handler(state=States.Buy_ts, chat_type=types.ChatType.PRIVATE)
 async def process_buy_ts(message: types.Message, state: FSMContext):
