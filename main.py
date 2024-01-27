@@ -75,6 +75,7 @@ async def get_wallet_address(address, minter):
 @dp.message_handler(commands=['start'], state='*', chat_type=types.ChatType.PRIVATE)
 async def start_command(message: types.Message):
     if not cur.execute(f"SELECT tg_id FROM users WHERE tg_id == {message.from_user.id}").fetchall():
+        print(message.text)
         if len(message.text.split()) > 1:
             if int(message.text.split()[1]) != int(message.from_user.id) and cur.execute(f"SELECT tg_id FROM users WHERE tg_id == {message.text.split()[1]}").fetchall():
                 try:
