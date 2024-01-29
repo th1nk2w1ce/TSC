@@ -81,7 +81,7 @@ async def deploy_wallets(user_id):
             sts_wallet_address = await get_wallet_address(connector.account.address, sts_jetton_minter_address)
         if ts_wallet_address is None:
             ts_wallet_address = await get_wallet_address(connector.account.address, ts_jetton_minter_address)
-        if ts_wallet_address not is None and sts_wallet_address not is None:
+        if ts_wallet_address is not None and sts_wallet_address is not None:
             break
 
     if ts_wallet_address is None or sts_wallet_address is None:
