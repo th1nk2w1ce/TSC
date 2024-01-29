@@ -393,6 +393,10 @@ async def personal_account(message: types.Message):
                 pass
         if ts != '' and sts != '':
             break
+    
+    if ts == '' or sts == '':
+        await message.answer("Что-то пошло не так...\nПопробуйте ещё раз позже")
+        return
 
     referer = cur.execute(f"SELECT referer FROM users WHERE tg_id == {message.from_user.id}").fetchall()[0][0]
 
