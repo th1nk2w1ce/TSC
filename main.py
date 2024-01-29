@@ -72,15 +72,15 @@ async def get_wallet_address(address, minter):
         print(e)
         return None
 
-async def deploy_wallets(user_id):
+async def deploy_wallets(address, user_id):
     sts_wallet_address = None
     ts_wallet_address = None
     for _ in range(120):
         await asyncio.sleep(1)
         if sts_wallet_address is None:
-            sts_wallet_address = await get_wallet_address(connector.account.address, sts_jetton_minter_address)
+            sts_wallet_address = await get_wallet_address(address, sts_jetton_minter_address)
         if ts_wallet_address is None:
-            ts_wallet_address = await get_wallet_address(connector.account.address, ts_jetton_minter_address)
+            ts_wallet_address = await get_wallet_address(address, ts_jetton_minter_address)
         if ts_wallet_address is not None and sts_wallet_address is not None:
             break
 
@@ -212,7 +212,7 @@ async def start_command(message: types.Message):
         await connect_wallet_tonkeeper(message)
         return
 
-    transaction = await deploy_wallets(message.from_user.id)
+    transaction = await deploy_wallets(connector.account.address, message.from_user.id)
 
     if transaction is None:
         await message.answer("Что-то пошло не так...\nПопробуйте ещё раз позже")
@@ -357,7 +357,7 @@ async def personal_account(message: types.Message):
     ts_wallet_address = await get_wallet_address(connector.account.address, ts_jetton_minter_address)
     sts_wallet_address = await get_wallet_address(connector.account.address, sts_jetton_minter_address)
 
-    transaction = await deploy_wallets(message.from_user.id)
+    transaction = await deploy_wallets(connector.account.address, message.from_user.id)
 
     if transaction is None:
         await message.answer("Что-то пошло не так...\nПопробуйте ещё раз позже")
