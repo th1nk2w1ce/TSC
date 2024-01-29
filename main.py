@@ -72,6 +72,82 @@ async def get_wallet_address(address, minter):
         print(e)
         return None
 
+async def deploy_wallets(user_id):
+    sts_wallet_address = None
+    ts_wallet_address = None
+    for _ in range(120):
+        await asyncio.sleep(1)
+        if sts_wallet_address is None:
+            sts_wallet_address = await get_wallet_address(connector.account.address, sts_jetton_minter_address)
+        if ts_wallet_address is None:
+            ts_wallet_address = await get_wallet_address(connector.account.address, ts_jetton_minter_address)
+        if ts_wallet_address not is None and sts_wallet_address not is None:
+            break
+
+    if ts_wallet_address is None or sts_wallet_address is None:
+        return None
+    
+    sts_referer = ''
+    ts_referer = ''
+
+    referer_address = cur.execute(f"SELECT referer_address FROM users WHERE tg_id == {user_id}").fetchall()[0][0]
+
+    try:
+        await asyncio.sleep(0.5)
+        url = f'https://tonapi.io/v2/blockchain/accounts/{ts_wallet_address}/methods/get_extra_data'
+        ts_referer = requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()
+        await asyncio.sleep(0.5)
+        url = f'https://tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_extra_data'
+        sts_referer = requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()
+    except Exception as e:
+        print(103)
+        return None
+
+    transaction = { }
+    if ('error' in ts_referer and ts_referer['error'] == 'rate limit: free tier') or ('error' in sts_referer and sts_referer['error'] == 'rate limit: free tier'):
+        return None
+
+    if ('error' in ts_referer and ts_referer['error'] == 'entity not found') and ('error' in sts_referer and sts_referer['error'] == 'entity not found'):
+        transaction = {
+            'valid_until': int(time.time()) + 300,
+            'messages': [
+                {
+                    'address': sts_jetton_minter_address,
+                    'amount': '1300000000',
+                    'payload': bytes_to_b64str(begin_cell().store_uint(0x2fc0dce9, 32).store_uint(1, 64).store_uint(1, 1).store_ref(begin_cell().store_uint(0x14dc5f3d, 32).store_uint(1, 64).store_address(Address(referer_address)).end_cell()).end_cell().to_boc())
+                },
+
+                {
+                    'address': ts_jetton_minter_address,
+                    'amount': '1300000000',
+                    'payload': bytes_to_b64str(begin_cell().store_uint(0x2fc0dce9, 32).store_uint(1, 64).store_uint(1, 1).store_ref(begin_cell().store_uint(0x14dc5f3d, 32).store_uint(1, 64).store_address(Address(referer_address)).end_cell()).end_cell().to_boc())
+                },
+            ]
+        }
+    elif ('error' in ts_referer and ts_referer['error'] == 'entity not found'):
+        transaction = {
+            'valid_until': int(time.time()) + 300,
+            'messages': [
+                {
+                    'address': ts_jetton_minter_address,
+                    'amount': '1300000000',
+                    'payload': bytes_to_b64str(begin_cell().store_uint(0x2fc0dce9, 32).store_uint(1, 64).store_uint(1, 1).store_ref(begin_cell().store_uint(0x14dc5f3d, 32).store_uint(1, 64).store_address(Address(referer_address)).end_cell()).end_cell().to_boc())
+                },
+            ]
+        }
+    elif ('error' in sts_referer and sts_referer['error'] == 'entity not found'):
+        transaction = {
+            'valid_until': int(time.time()) + 300,
+            'messages': [
+                {
+                    'address': sts_jetton_minter_address,
+                    'amount': '1300000000',
+                    'payload': bytes_to_b64str(begin_cell().store_uint(0x2fc0dce9, 32).store_uint(1, 64).store_uint(1, 1).store_ref(begin_cell().store_uint(0x14dc5f3d, 32).store_uint(1, 64).store_address(Address(referer_address)).end_cell()).end_cell().to_boc())
+                },
+            ]
+        }
+    return transaction
+
 @dp.message_handler(commands=['start'], state='*', chat_type=types.ChatType.PRIVATE)
 async def start_command(message: types.Message):
     if not cur.execute(f"SELECT tg_id FROM users WHERE tg_id == {message.from_user.id}").fetchall():
@@ -135,76 +211,12 @@ async def start_command(message: types.Message):
         await message.answer("Прежде чем начать работу с ботом подключите кошелёк")
         await connect_wallet_tonkeeper(message)
         return
-    
-    sts_wallet_address = await get_wallet_address(connector.account.address, sts_jetton_minter_address)
-    ts_wallet_address = await get_wallet_address(connector.account.address, ts_jetton_minter_address)
 
-    if (sts_wallet_address is None or ts_wallet_address is None):
+    transaction = await deploy_wallets(message.from_user.id)
+
+    if transaction is None:
         await message.answer("Что-то пошло не так...\nПопробуйте ещё раз позже")
         return
-    
-    sts_referer = ''
-    ts_referer = ''
-
-    referer_address = cur.execute(f"SELECT referer_address FROM users WHERE tg_id == {message.from_user.id}").fetchall()[0][0]
-
-    try:
-        await asyncio.sleep(0.5)
-        url = f'https://tonapi.io/v2/blockchain/accounts/{ts_wallet_address}/methods/get_extra_data'
-        ts_referer = requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()
-        await asyncio.sleep(0.5)
-        url = f'https://tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_extra_data'
-        sts_referer = requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()
-    except Exception as e:
-        print(e)
-        await message.answer("Что-то пошло не так...\nПопробуйте ещё раз позже")
-        return
-
-    transaction = { }
-    if ('error' in ts_referer and ts_referer['error'] == 'rate limit: free tier') or ('error' in sts_referer and sts_referer['error'] == 'rate limit: free tier'):
-        await message.answer("Что-то пошло не так...\nПопробуйте ещё раз позже")
-        return
-
-    if ('error' in ts_referer and ts_referer['error'] == 'entity not found') and ('error' in sts_referer and sts_referer['error'] == 'entity not found'):
-        transaction = {
-            'valid_until': int(time.time()) + 300,
-            'messages': [
-                {
-                    'address': sts_jetton_minter_address,
-                    'amount': '1300000000',
-                    'payload': bytes_to_b64str(begin_cell().store_uint(0x2fc0dce9, 32).store_uint(1, 64).store_uint(1, 1).store_ref(begin_cell().store_uint(0x14dc5f3d, 32).store_uint(1, 64).store_address(Address(referer_address)).end_cell()).end_cell().to_boc())
-                },
-
-                {
-                    'address': ts_jetton_minter_address,
-                    'amount': '1300000000',
-                    'payload': bytes_to_b64str(begin_cell().store_uint(0x2fc0dce9, 32).store_uint(1, 64).store_uint(1, 1).store_ref(begin_cell().store_uint(0x14dc5f3d, 32).store_uint(1, 64).store_address(Address(referer_address)).end_cell()).end_cell().to_boc())
-                },
-            ]
-        }
-    elif ('error' in ts_referer and ts_referer['error'] == 'entity not found'):
-        transaction = {
-            'valid_until': int(time.time()) + 300,
-            'messages': [
-                {
-                    'address': ts_jetton_minter_address,
-                    'amount': '1300000000',
-                    'payload': bytes_to_b64str(begin_cell().store_uint(0x2fc0dce9, 32).store_uint(1, 64).store_uint(1, 1).store_ref(begin_cell().store_uint(0x14dc5f3d, 32).store_uint(1, 64).store_address(Address(referer_address)).end_cell()).end_cell().to_boc())
-                },
-            ]
-        }
-    elif ('error' in sts_referer and sts_referer['error'] == 'entity not found'):
-        transaction = {
-            'valid_until': int(time.time()) + 300,
-            'messages': [
-                {
-                    'address': sts_jetton_minter_address,
-                    'amount': '1300000000',
-                    'payload': bytes_to_b64str(begin_cell().store_uint(0x2fc0dce9, 32).store_uint(1, 64).store_uint(1, 1).store_ref(begin_cell().store_uint(0x14dc5f3d, 32).store_uint(1, 64).store_address(Address(referer_address)).end_cell()).end_cell().to_boc())
-                },
-            ]
-        }
-    
     
     if transaction:
         try:
@@ -345,23 +357,42 @@ async def personal_account(message: types.Message):
     ts_wallet_address = await get_wallet_address(connector.account.address, ts_jetton_minter_address)
     sts_wallet_address = await get_wallet_address(connector.account.address, sts_jetton_minter_address)
 
+    transaction = await deploy_wallets(message.from_user.id)
+
+    if transaction is None:
+        await message.answer("Что-то пошло не так...\nПопробуйте ещё раз позже")
+        return
+    
+    if transaction:
+        try:
+            await message.answer("Подтвердите транзакцию в кошельке для дальнейшей работы с ботом")
+            await connector.send_transaction(transaction)
+        except Exception as e:
+            print(e)
+            await message.answer("Что-то пошло не так...\nПопробуйте ещё раз позже")
+            return
+
     ts = ''
     sts = ''
-    while ts == '':
-        try:
-            url = f'https://tonapi.io/v2/blockchain/accounts/{ts_wallet_address}/methods/get_wallet_data'
-            ts = float(requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()['decoded']['balance']) / 1e9
-        except Exception as e:
-            print(e)
-            pass
-    
-    while sts == '':
-        try:
-            url = f'https://tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_wallet_data'
-            sts = float(requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()['decoded']['balance']) / 1e9
-        except Exception as e:
-            print(e)
-            pass
+
+    for _ in range(120):
+        await asyncio.sleep(1)
+        if ts == '':
+            try:
+                url = f'https://tonapi.io/v2/blockchain/accounts/{ts_wallet_address}/methods/get_wallet_data'
+                ts = float(requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()['decoded']['balance']) / 1e9
+            except Exception as e:
+                print(e)
+                pass
+        if sts == '':
+            try:
+                url = f'https://tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_wallet_data'
+                sts = float(requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()['decoded']['balance']) / 1e9
+            except Exception as e:
+                print(e)
+                pass
+        if ts != '' and sts != '':
+            break
 
     referer = cur.execute(f"SELECT referer FROM users WHERE tg_id == {message.from_user.id}").fetchall()[0][0]
 
