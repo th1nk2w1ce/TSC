@@ -374,6 +374,7 @@ async def personal_account(message: types.Message):
 
     ts = ''
     sts = ''
+    sts_value = ''
 
     for _ in range(120):
         await asyncio.sleep(1)
@@ -388,6 +389,13 @@ async def personal_account(message: types.Message):
             try:
                 url = f'https://testnet.tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_wallet_data'
                 sts = float(requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()['decoded']['balance']) / 1e9
+            except Exception as e:
+                print(e)
+                pass
+        if sts_value = '':
+            try:
+                url = f'https://testnet.tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_extra_data'
+                sts_value = float(int(requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()['stack'][0]['num'], 16) / 1e9)
             except Exception as e:
                 print(e)
                 pass
@@ -406,7 +414,7 @@ async def personal_account(message: types.Message):
         referer_name = (await bot.get_chat(referer)).first_name
         referer = f'[{referer_name}](tg://user?id={referer})'
     
-    await bot.send_message(chat_id=message.from_user.id, text=f'Рефералы первого уровня: {firts_lvl_referals}\nВсе рефералы: {all_referals}\nВас пригласил: {referer}\nБаланс STS: {sts:.2f}\nБаланс TS: {ts:.2f}\nРеферальная ссылка: {link}'.replace('.', '\\.'), parse_mode='MarkdownV2')
+    await bot.send_message(chat_id=message.from_user.id, text=f'Рефералы первого уровня: {firts_lvl_referals}\nВсе рефералы: {all_referals}\nВас пригласил: {referer}\nБаланс STS: {sts:.2f}\nБаланс STS в стейкенге: {sts_value:.2f}\nБаланс TS: {ts:.2f}\nРеферальная ссылка: {link}'.replace('.', '\\.'), parse_mode='MarkdownV2')
 
 @dp.message_handler(commands=['sell_ts'], state='*', chat_type=types.ChatType.PRIVATE)
 async def sell_ts(message: types.Message):
