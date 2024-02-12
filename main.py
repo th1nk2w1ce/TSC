@@ -392,7 +392,7 @@ async def personal_account(message: types.Message):
             except Exception as e:
                 print(e)
                 pass
-        if sts_value = '':
+        if sts_value == '':
             try:
                 url = f'https://testnet.tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_extra_data'
                 sts_value = float(int(requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()['stack'][0]['num'], 16) / 1e9)
