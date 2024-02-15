@@ -802,7 +802,7 @@ async def process_unstake_sts(message: types.Message, state: FSMContext):
         'messages': [
             {
                 'address': sts_wallet_address,
-                'amount': '200000000',
+                'amount': '2000000000',
                 'payload': bytes_to_b64str(begin_cell().store_uint(0x48e9880f, 32).store_uint(1, 64).store_coins(int(value * 1e9)).end_cell().to_boc())
             },
         ]
