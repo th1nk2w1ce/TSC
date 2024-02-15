@@ -374,7 +374,8 @@ async def personal_account(message: types.Message):
 
     ts = ''
     sts = ''
-    sts_value = ''
+    balance_stacked = ''
+    first_lvl_staked = ''
 
     for _ in range(120):
         await asyncio.sleep(1)
@@ -392,15 +393,44 @@ async def personal_account(message: types.Message):
             except Exception as e:
                 print(e)
                 pass
-        if sts_value == '':
+        if balance_stacked == '':
             try:
                 url = f'https://testnet.tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_extra_data'
-                sts_value = float(int(requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()['stack'][0]['num'], 16) / 1e9)
+                response = requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()
+                balance_stacked = float(int(response['stack'][0]['num'], 16))
+                first_lvl_staked = float(int(response['stack'][3]['num'], 16))
             except Exception as e:
                 print(e)
                 pass
         if ts != '' and sts != '':
             break
+
+    qualification = 0
+
+    if ((balance_stacked >= 1000000000 * 250000) & (first_lvl_staked >= 1000000000 * 1250000) & (all_referals >= 25000)):
+        qualification = 12
+    elif ((balance_stacked >= 1000000000 * 100000) & (first_lvl_staked >= 1000000000 * 500000) & (all_referals >= 10000)):
+        qualification = 11
+    elif ((balance_stacked >= 1000000000 * 50000) & (first_lvl_staked >= 1000000000 * 250000) & (all_referals >= 5000)):
+        qualification = 10
+    elif ((balance_stacked >= 1000000000 * 25000) & (first_lvl_staked >= 1000000000 * 125000) & (all_referals >= 2500)):
+        qualification = 9
+    elif ((balance_stacked >= 1000000000 * 10000) & (first_lvl_staked >= 1000000000 * 50000) & (all_referals >= 1000)):
+        qualification = 8
+    elif ((balance_stacked >= 1000000000 * 5000) & (first_lvl_staked >= 1000000000 * 25000) & (all_referals >= 500)):
+        qualification = 7
+    elif ((balance_stacked >= 1000000000 * 2500) & (first_lvl_staked >= 1000000000 * 12500) & (all_referals >= 250)):
+        qualification = 6
+    elif ((balance_stacked >= 1000000000 * 1000) & (first_lvl_staked >= 1000000000 * 5000) & (all_referals >= 100)):
+        qualification = 5
+    elif ((balance_stacked >= 1000000000 * 500) & (first_lvl_staked >= 1000000000 * 2500) & (all_referals >= 50)):
+        qualification = 4
+    elif ((balance_stacked >= 1000000000 * 250) & (first_lvl_staked >= 1000000000 * 1250) & (all_referals >= 25)):
+        qualification = 3
+    elif ((balance_stacked >= 1000000000 * 100) & (first_lvl_staked >= 1000000000 * 500) & (all_referals >= 10)):
+        qualification = 2
+    elif ((balance_stacked >= 1000000000 * 20) & (first_lvl_staked >= 1000000000 * 0) & (all_referals >= 0)):
+        qualification = 1
     
     if ts == '' or sts == '':
         await message.answer("Что-то пошло не так...\nПопробуйте ещё раз позже")
@@ -414,7 +444,7 @@ async def personal_account(message: types.Message):
         referer_name = (await bot.get_chat(referer)).first_name
         referer = f'[{referer_name}](tg://user?id={referer})'
     
-    await bot.send_message(chat_id=message.from_user.id, text=f'Рефералы первого уровня: {firts_lvl_referals}\nВсе рефералы: {all_referals}\nВас пригласил: {referer}\nБаланс STS: {sts:.2f}\nБаланс STS в стейкенге: {sts_value:.2f}\nБаланс TS: {ts:.2f}\nРеферальная ссылка: {link}'.replace('.', '\\.'), parse_mode='MarkdownV2')
+    await bot.send_message(chat_id=message.from_user.id, text=f'Рефералы первого уровня: {firts_lvl_referals}\nВсе рефералы: {all_referals}\nВас пригласил: {referer}\nКвалификация: {qualification}\nБаланс STS: {sts:.2f}\nБаланс STS в стейкенге: {(balance_stacked / 1e9):.2f}\nВ стейке у рефералов: {first_lvl_staked}\nБаланс TS: {ts:.2f}\nРеферальная ссылка: {link}'.replace('.', '\\.'), parse_mode='MarkdownV2')
 
 @dp.message_handler(commands=['sell_ts'], state='*', chat_type=types.ChatType.PRIVATE)
 async def sell_ts(message: types.Message):
