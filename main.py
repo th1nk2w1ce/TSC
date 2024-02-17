@@ -60,8 +60,8 @@ checkButton = InlineKeyboardButton(text='Проверить подписку', c
 
 check.add(checkButton)
 
-sts_jetton_minter_address = 'kQA6zv_EjNDXZBU7os3WuzNHsDX_mv6SMnsnwL6BWmer_ic_'
-ts_jetton_minter_address = 'kQD6vYq41f_n6zCDO3E966ATIfcwir5i83s68UK0kaoSBztH'
+sts_jetton_minter_address = '0QAJEkhgtKaDuZN2vhF2YDZ2gRp5AgUVyj9IuHmsvpbsT87y'
+ts_jetton_minter_address = '0QCtKiWil5PSIV6w5P8EsTBKUaQslFUlePome-cnXXVaIDsZ'
 
 async def get_wallet_address(address, minter):
     url = f'https://testnet.tonapi.io/v2/blockchain/accounts/{minter}/methods/get_wallet_address?args={address}'
@@ -113,13 +113,13 @@ async def deploy_wallets(address, user_id):
             'messages': [
                 {
                     'address': sts_jetton_minter_address,
-                    'amount': '1300000000',
+                    'amount': '500000000',
                     'payload': bytes_to_b64str(begin_cell().store_uint(0x2fc0dce9, 32).store_uint(1, 64).store_uint(1, 1).store_ref(begin_cell().store_uint(0x14dc5f3d, 32).store_uint(1, 64).store_address(Address(referer_address)).end_cell()).end_cell().to_boc())
                 },
 
                 {
                     'address': ts_jetton_minter_address,
-                    'amount': '1300000000',
+                    'amount': '500000000',
                     'payload': bytes_to_b64str(begin_cell().store_uint(0x2fc0dce9, 32).store_uint(1, 64).store_uint(1, 1).store_ref(begin_cell().store_uint(0x14dc5f3d, 32).store_uint(1, 64).store_address(Address(referer_address)).end_cell()).end_cell().to_boc())
                 },
             ]
@@ -130,7 +130,7 @@ async def deploy_wallets(address, user_id):
             'messages': [
                 {
                     'address': ts_jetton_minter_address,
-                    'amount': '1300000000',
+                    'amount': '500000000',
                     'payload': bytes_to_b64str(begin_cell().store_uint(0x2fc0dce9, 32).store_uint(1, 64).store_uint(1, 1).store_ref(begin_cell().store_uint(0x14dc5f3d, 32).store_uint(1, 64).store_address(Address(referer_address)).end_cell()).end_cell().to_boc())
                 },
             ]
@@ -141,7 +141,7 @@ async def deploy_wallets(address, user_id):
             'messages': [
                 {
                     'address': sts_jetton_minter_address,
-                    'amount': '1300000000',
+                    'amount': '500000000',
                     'payload': bytes_to_b64str(begin_cell().store_uint(0x2fc0dce9, 32).store_uint(1, 64).store_uint(1, 1).store_ref(begin_cell().store_uint(0x14dc5f3d, 32).store_uint(1, 64).store_address(Address(referer_address)).end_cell()).end_cell().to_boc())
                 },
             ]
@@ -654,7 +654,7 @@ async def process_sell_ts(message: types.Message, state: FSMContext):
         'messages': [
             {
                 'address': ts_wallet_address,
-                'amount': '1700000000',
+                'amount': '600000000',
                 'payload': bytes_to_b64str(begin_cell().store_uint(0x0f8a7ea5, 32).store_uint(1, 64).store_coins(int(value * 1e9)).store_address(Address(sts_jetton_minter_address)).store_address(Address(connector.account.address)).store_uint(0, 1).store_coins(1500000000).store_uint(0, 1).end_cell().to_boc())
             },
         ]
@@ -802,7 +802,7 @@ async def process_unstake_sts(message: types.Message, state: FSMContext):
         'messages': [
             {
                 'address': sts_wallet_address,
-                'amount': '2000000000',
+                'amount': '600000000',
                 'payload': bytes_to_b64str(begin_cell().store_uint(0x48e9880f, 32).store_uint(1, 64).store_coins(int(value * 1e9)).end_cell().to_boc())
             },
         ]
