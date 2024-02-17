@@ -60,7 +60,7 @@ checkButton = InlineKeyboardButton(text='Проверить подписку', c
 
 check.add(checkButton)
 
-sts_jetton_minter_address = '0QAJEkhgtKaDuZN2vhF2YDZ2gRp5AgUVyj9IuHmsvpbsT87y'
+sts_jetton_minter_address = '0QCRRbH51g_TUzdExdaWYdu0Y7ixXdVuqfnBolWaFE5gjmSe'
 ts_jetton_minter_address = '0QCtKiWil5PSIV6w5P8EsTBKUaQslFUlePome-cnXXVaIDsZ'
 
 async def get_wallet_address(address, minter):
@@ -654,8 +654,8 @@ async def process_sell_ts(message: types.Message, state: FSMContext):
         'messages': [
             {
                 'address': ts_wallet_address,
-                'amount': '600000000',
-                'payload': bytes_to_b64str(begin_cell().store_uint(0x0f8a7ea5, 32).store_uint(1, 64).store_coins(int(value * 1e9)).store_address(Address(sts_jetton_minter_address)).store_address(Address(connector.account.address)).store_uint(0, 1).store_coins(1500000000).store_uint(0, 1).end_cell().to_boc())
+                'amount': '500000000',
+                'payload': bytes_to_b64str(begin_cell().store_uint(0x0f8a7ea5, 32).store_uint(1, 64).store_coins(int(value * 1e9)).store_address(Address(sts_jetton_minter_address)).store_address(Address(connector.account.address)).store_uint(0, 1).store_coins(400000000).store_uint(0, 1).end_cell().to_boc())
             },
         ]
     }
