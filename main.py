@@ -60,7 +60,7 @@ checkButton = InlineKeyboardButton(text='Проверить подписку', c
 
 check.add(checkButton)
 
-sts_jetton_minter_address = '0QCRRbH51g_TUzdExdaWYdu0Y7ixXdVuqfnBolWaFE5gjmSe'
+sts_jetton_minter_address = '0QBq7uIJ-L8kG97C5XjOzKZFzMKSpz4c54wSCZyyVMV8mZqZ'
 ts_jetton_minter_address = '0QCtKiWil5PSIV6w5P8EsTBKUaQslFUlePome-cnXXVaIDsZ'
 
 async def get_wallet_address(address, minter):
