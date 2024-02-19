@@ -453,22 +453,6 @@ async def sell_ts(message: types.Message):
 
     await message.delete()
 
-    transaction = await deploy_wallets(connector.account.address, message.from_user.id)
-
-    if transaction is None:
-        await message.answer("Что-то пошло не так...\nПопробуйте ещё раз позже")
-        return
-    
-    if transaction:
-        try:
-            await message.answer("Подтвердите транзакцию в кошельке для дальнейшей работы с ботом")
-            await connector.send_transaction(transaction)
-            return
-        except Exception as e:
-            print(e)
-            await message.answer("Что-то пошло не так...\nПопробуйте ещё раз позже")
-            return
-
     # Create a storage instance based on the user's ID
     storage = database.Storage(str(message.from_user.id))
 
@@ -487,6 +471,22 @@ async def sell_ts(message: types.Message):
     if user_channel_status["status"] == 'left':
         await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](https://t.me/+mhOR-8h28xg1ZTli)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
         return
+    
+    transaction = await deploy_wallets(connector.account.address, message.from_user.id)
+
+    if transaction is None:
+        await message.answer("Что-то пошло не так...\nПопробуйте ещё раз позже")
+        return
+    
+    if transaction:
+        try:
+            await message.answer("Подтвердите транзакцию в кошельке для дальнейшей работы с ботом")
+            await connector.send_transaction(transaction)
+            return
+        except Exception as e:
+            print(e)
+            await message.answer("Что-то пошло не так...\nПопробуйте ещё раз позже")
+            return
 
     ts_wallet_address = await get_wallet_address(connector.account.address, ts_jetton_minter_address)
 
@@ -510,22 +510,6 @@ async def buy_ts(message: types.Message):
 
     await message.delete()
 
-    transaction = await deploy_wallets(connector.account.address, message.from_user.id)
-
-    if transaction is None:
-        await message.answer("Что-то пошло не так...\nПопробуйте ещё раз позже")
-        return
-    
-    if transaction:
-        try:
-            await message.answer("Подтвердите транзакцию в кошельке для дальнейшей работы с ботом")
-            await connector.send_transaction(transaction)
-            return
-        except Exception as e:
-            print(e)
-            await message.answer("Что-то пошло не так...\nПопробуйте ещё раз позже")
-            return
-
     # Create a storage instance based on the user's ID
     storage = database.Storage(str(message.from_user.id))
 
@@ -544,7 +528,22 @@ async def buy_ts(message: types.Message):
     if user_channel_status["status"] == 'left':
         await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](https://t.me/+mhOR-8h28xg1ZTli)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
         return
+    
+    transaction = await deploy_wallets(connector.account.address, message.from_user.id)
 
+    if transaction is None:
+        await message.answer("Что-то пошло не так...\nПопробуйте ещё раз позже")
+        return
+    
+    if transaction:
+        try:
+            await message.answer("Подтвердите транзакцию в кошельке для дальнейшей работы с ботом")
+            await connector.send_transaction(transaction)
+            return
+        except Exception as e:
+            print(e)
+            await message.answer("Что-то пошло не так...\nПопробуйте ещё раз позже")
+            return
 
     await message.answer(f"Введите сколько TS купить.")
     await States.Buy_ts.set()
@@ -556,22 +555,6 @@ async def stake_sts(message: types.Message):
 
     await message.delete()
 
-    transaction = await deploy_wallets(connector.account.address, message.from_user.id)
-
-    if transaction is None:
-        await message.answer("Что-то пошло не так...\nПопробуйте ещё раз позже")
-        return
-    
-    if transaction:
-        try:
-            await message.answer("Подтвердите транзакцию в кошельке для дальнейшей работы с ботом")
-            await connector.send_transaction(transaction)
-            return
-        except Exception as e:
-            print(e)
-            await message.answer("Что-то пошло не так...\nПопробуйте ещё раз позже")
-            return
-
     # Create a storage instance based on the user's ID
     storage = database.Storage(str(message.from_user.id))
 
@@ -590,6 +573,22 @@ async def stake_sts(message: types.Message):
     if user_channel_status["status"] == 'left':
         await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](https://t.me/+mhOR-8h28xg1ZTli)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
         return
+    
+    transaction = await deploy_wallets(connector.account.address, message.from_user.id)
+
+    if transaction is None:
+        await message.answer("Что-то пошло не так...\nПопробуйте ещё раз позже")
+        return
+    
+    if transaction:
+        try:
+            await message.answer("Подтвердите транзакцию в кошельке для дальнейшей работы с ботом")
+            await connector.send_transaction(transaction)
+            return
+        except Exception as e:
+            print(e)
+            await message.answer("Что-то пошло не так...\nПопробуйте ещё раз позже")
+            return
 
     sts_wallet_address = await get_wallet_address(connector.account.address, sts_jetton_minter_address)
 
@@ -616,22 +615,6 @@ async def unstake_sts(message: types.Message):
 
     await message.delete()
 
-    transaction = await deploy_wallets(connector.account.address, message.from_user.id)
-
-    if transaction is None:
-        await message.answer("Что-то пошло не так...\nПопробуйте ещё раз позже")
-        return
-    
-    if transaction:
-        try:
-            await message.answer("Подтвердите транзакцию в кошельке для дальнейшей работы с ботом")
-            await connector.send_transaction(transaction)
-            return
-        except Exception as e:
-            print(e)
-            await message.answer("Что-то пошло не так...\nПопробуйте ещё раз позже")
-            return
-
     # Create a storage instance based on the user's ID
     storage = database.Storage(str(message.from_user.id))
 
@@ -650,6 +633,22 @@ async def unstake_sts(message: types.Message):
     if user_channel_status["status"] == 'left':
         await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](https://t.me/+mhOR-8h28xg1ZTli)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
         return
+    
+    transaction = await deploy_wallets(connector.account.address, message.from_user.id)
+
+    if transaction is None:
+        await message.answer("Что-то пошло не так...\nПопробуйте ещё раз позже")
+        return
+    
+    if transaction:
+        try:
+            await message.answer("Подтвердите транзакцию в кошельке для дальнейшей работы с ботом")
+            await connector.send_transaction(transaction)
+            return
+        except Exception as e:
+            print(e)
+            await message.answer("Что-то пошло не так...\nПопробуйте ещё раз позже")
+            return
 
     sts_wallet_address = await get_wallet_address(connector.account.address, sts_jetton_minter_address)
 
