@@ -60,8 +60,8 @@ checkButton = InlineKeyboardButton(text='Проверить подписку', c
 
 check.add(checkButton)
 
-sts_jetton_minter_address = '0QBq7uIJ-L8kG97C5XjOzKZFzMKSpz4c54wSCZyyVMV8mZqZ'
-ts_jetton_minter_address = '0QCtKiWil5PSIV6w5P8EsTBKUaQslFUlePome-cnXXVaIDsZ'
+sts_jetton_minter_address = 'EQDYPgj5XAh_bhCvXxB92cBAA0Sq6aMGX57NhTY_noGh4b5F'
+ts_jetton_minter_address = 'EQBpZ7W3CKucEUY9slmKEnBG9nPr-hfmiDe3yyLWB7vBF8cx'
 
 async def get_wallet_address(address, minter):
     url = f'https://testnet.tonapi.io/v2/blockchain/accounts/{minter}/methods/get_wallet_address?args={address}'
@@ -912,6 +912,10 @@ async def process_buy_ts(message: types.Message, state: FSMContext):
         value = float(message.text)
     except Exception as e:
         print(e)
+        await message.answer('Не корректное число')
+        return
+
+    if value <= 0:
         await message.answer('Не корректное число')
         return
 
