@@ -44,7 +44,7 @@ cur.execute('''INSERT INTO users VALUES (
     false,
     1749027454,
     0,
-    "UQBKgXCNLPexWhs2L79kiARR1phGH1LwXxRbNsCFF9doczSI"
+    "UQDMJmEfG-xpZgSx9twNv6as1EaqBNUjGGJ632F5goJnuDSE"
 )''')
 
 bot = Bot(token=api_token)
@@ -60,11 +60,11 @@ checkButton = InlineKeyboardButton(text='Проверить подписку', c
 
 check.add(checkButton)
 
-sts_jetton_minter_address = 'EQAJiMcvg5V9NoLEsq_9mI7k1Zpmy5VHEV6hD9wkmWOgG58v'
-ts_jetton_minter_address = 'EQAKHGt6uKG_elp4MzhcgajXSLaCbZtciJit3Lxq4XxOmN8M'
+sts_jetton_minter_address = 'EQCE_CzOodvcga-VYWgplMMWzOlEenXwWP4mVSCa4E6uoonk'
+ts_jetton_minter_address = 'EQAoSYrsto8Bdki_zJYG4WdTb0BaoyUFGNh5KKzNR25S2oim'
 
 async def get_wallet_address(address, minter):
-    url = f'https://testnet.tonapi.io/v2/blockchain/accounts/{minter}/methods/get_wallet_address?args={address}'
+    url = f'https://tonapi.io/v2/blockchain/accounts/{minter}/methods/get_wallet_address?args={address}'
     try:
         response = requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()['decoded']['jetton_wallet_address']
         return response
@@ -94,10 +94,10 @@ async def deploy_wallets(address, user_id):
 
     try:
         await asyncio.sleep(0.5)
-        url = f'https://testnet.tonapi.io/v2/blockchain/accounts/{ts_wallet_address}/methods/get_extra_data'
+        url = f'https://tonapi.io/v2/blockchain/accounts/{ts_wallet_address}/methods/get_extra_data'
         ts_referer = requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()
         await asyncio.sleep(0.5)
-        url = f'https://testnet.tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_extra_data'
+        url = f'https://tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_extra_data'
         sts_referer = requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()
     except Exception as e:
         print(103)
@@ -294,9 +294,9 @@ async def connect_wallet_tonkeeper(message: types.Message):
     # Confirm to the user that the wallet has been successfully connected
     await message.answer('Ваш кошелёк успешно подключён')
 
-    user_channel_status = await bot.get_chat_member(chat_id=-1002133374530, user_id=message.from_user.id)
+    user_channel_status = await bot.get_chat_member(chat_id=-1001671984291, user_id=message.from_user.id)
     if user_channel_status["status"] == 'left':
-        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](https://t.me/+mhOR-8h28xg1ZTli)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
+        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](t.me/TSC_official_channel)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
         return
     
     if not cur.execute(f"SELECT flag FROM users WHERE tg_id == {message.from_user.id}").fetchall()[0][0]:
@@ -309,7 +309,7 @@ async def connect_wallet_tonkeeper(message: types.Message):
 
 @dp.callback_query_handler(text = 'check')
 async def check_subscription(call: types.CallbackQuery):
-    user_channel_status = await bot.get_chat_member(chat_id=-1002133374530, user_id=call.from_user.id)
+    user_channel_status = await bot.get_chat_member(chat_id=-1001671984291, user_id=call.from_user.id)
     if user_channel_status["status"] == 'left':
         await call.answer("Вы не подписаны на канал")
         return
@@ -338,9 +338,9 @@ async def personal_account(message: types.Message):
         await connect_wallet_tonkeeper(message)
         return
     
-    user_channel_status = await bot.get_chat_member(chat_id=-1002133374530, user_id=message.from_user.id)
+    user_channel_status = await bot.get_chat_member(chat_id=-1001671984291, user_id=message.from_user.id)
     if user_channel_status["status"] == 'left':
-        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](https://t.me/+mhOR-8h28xg1ZTli)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
+        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](t.me/TSC_official_channel)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
         return
 
     if not cur.execute(f"SELECT flag FROM users WHERE tg_id == {message.from_user.id}").fetchall()[0][0]:
@@ -381,21 +381,21 @@ async def personal_account(message: types.Message):
         await asyncio.sleep(1)
         if ts == '':
             try:
-                url = f'https://testnet.tonapi.io/v2/blockchain/accounts/{ts_wallet_address}/methods/get_wallet_data'
+                url = f'https://tonapi.io/v2/blockchain/accounts/{ts_wallet_address}/methods/get_wallet_data'
                 ts = float(requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()['decoded']['balance']) / 1e9
             except Exception as e:
                 print(e)
                 pass
         if sts == '':
             try:
-                url = f'https://testnet.tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_wallet_data'
+                url = f'https://tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_wallet_data'
                 sts = float(requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()['decoded']['balance']) / 1e9
             except Exception as e:
                 print(e)
                 pass
         if balance_stacked == '':
             try:
-                url = f'https://testnet.tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_extra_data'
+                url = f'https://tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_extra_data'
                 response = requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()
                 balance_stacked = float(int(response['stack'][0]['num'], 16))
                 first_lvl_staked = float(int(response['stack'][3]['num'], 16))
@@ -467,9 +467,9 @@ async def sell_ts(message: types.Message):
         await connect_wallet_tonkeeper(message)
         return
     
-    user_channel_status = await bot.get_chat_member(chat_id=-1002133374530, user_id=message.from_user.id)
+    user_channel_status = await bot.get_chat_member(chat_id=-1001671984291, user_id=message.from_user.id)
     if user_channel_status["status"] == 'left':
-        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](https://t.me/+mhOR-8h28xg1ZTli)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
+        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](t.me/TSC_official_channel)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
         return
     
     transaction = await deploy_wallets(connector.account.address, message.from_user.id)
@@ -493,7 +493,7 @@ async def sell_ts(message: types.Message):
     value = ''
     while value == '':
         try:
-            url = f'https://testnet.tonapi.io/v2/blockchain/accounts/{ts_wallet_address}/methods/get_wallet_data'
+            url = f'https://tonapi.io/v2/blockchain/accounts/{ts_wallet_address}/methods/get_wallet_data'
             value = float(requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()['decoded']['balance'])
         except Exception as e:
             print(e)
@@ -524,9 +524,9 @@ async def buy_ts(message: types.Message):
         await connect_wallet_tonkeeper(message)
         return
     
-    user_channel_status = await bot.get_chat_member(chat_id=-1002133374530, user_id=message.from_user.id)
+    user_channel_status = await bot.get_chat_member(chat_id=-1001671984291, user_id=message.from_user.id)
     if user_channel_status["status"] == 'left':
-        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](https://t.me/+mhOR-8h28xg1ZTli)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
+        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](t.me/TSC_official_channel)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
         return
     
     transaction = await deploy_wallets(connector.account.address, message.from_user.id)
@@ -569,9 +569,9 @@ async def stake_sts(message: types.Message):
         await connect_wallet_tonkeeper(message)
         return
     
-    user_channel_status = await bot.get_chat_member(chat_id=-1002133374530, user_id=message.from_user.id)
+    user_channel_status = await bot.get_chat_member(chat_id=-1001671984291, user_id=message.from_user.id)
     if user_channel_status["status"] == 'left':
-        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](https://t.me/+mhOR-8h28xg1ZTli)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
+        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](t.me/TSC_official_channel)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
         return
     
     transaction = await deploy_wallets(connector.account.address, message.from_user.id)
@@ -595,7 +595,7 @@ async def stake_sts(message: types.Message):
     value = ''
     while value == '':
         try:
-            url = f'https://testnet.tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_wallet_data'
+            url = f'https://tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_wallet_data'
             value = float(requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()['decoded']['balance'])
         except Exception as e:
             print(e)
@@ -629,9 +629,9 @@ async def unstake_sts(message: types.Message):
         await connect_wallet_tonkeeper(message)
         return
     
-    user_channel_status = await bot.get_chat_member(chat_id=-1002133374530, user_id=message.from_user.id)
+    user_channel_status = await bot.get_chat_member(chat_id=-1001671984291, user_id=message.from_user.id)
     if user_channel_status["status"] == 'left':
-        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](https://t.me/+mhOR-8h28xg1ZTli)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
+        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](t.me/TSC_official_channel)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
         return
     
     transaction = await deploy_wallets(connector.account.address, message.from_user.id)
@@ -655,7 +655,7 @@ async def unstake_sts(message: types.Message):
     value = ''
     while value == '':
         try:
-            url = f'https://testnet.tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_extra_data'
+            url = f'https://tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_extra_data'
             value = int(requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()['stack'][0]['num'], 16)
         except Exception as e:
             print(e)
@@ -685,9 +685,9 @@ async def process_sell_ts(message: types.Message, state: FSMContext):
         await connect_wallet_tonkeeper(message)
         return
     
-    user_channel_status = await bot.get_chat_member(chat_id=-1002133374530, user_id=message.from_user.id)
+    user_channel_status = await bot.get_chat_member(chat_id=-1001671984291, user_id=message.from_user.id)
     if user_channel_status["status"] == 'left':
-        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](https://t.me/+mhOR-8h28xg1ZTli)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
+        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](t.me/TSC_official_channel)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
         return
 
     ts_wallet_address = await get_wallet_address(connector.account.address, ts_jetton_minter_address)
@@ -695,7 +695,7 @@ async def process_sell_ts(message: types.Message, state: FSMContext):
     max_value = ''
     while max_value == '':
         try:
-            url = f'https://testnet.tonapi.io/v2/blockchain/accounts/{ts_wallet_address}/methods/get_wallet_data'
+            url = f'https://tonapi.io/v2/blockchain/accounts/{ts_wallet_address}/methods/get_wallet_data'
             max_value = float(requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()['decoded']['balance'])
         except Exception as e:
             print(e)
@@ -755,9 +755,9 @@ async def process_stake_sts(message: types.Message, state: FSMContext):
         await connect_wallet_tonkeeper(message)
         return
     
-    user_channel_status = await bot.get_chat_member(chat_id=-1002133374530, user_id=message.from_user.id)
+    user_channel_status = await bot.get_chat_member(chat_id=-1001671984291, user_id=message.from_user.id)
     if user_channel_status["status"] == 'left':
-        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](https://t.me/+mhOR-8h28xg1ZTli)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
+        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](t.me/TSC_official_channel)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
         return
 
     sts_wallet_address = await get_wallet_address(connector.account.address, sts_jetton_minter_address)
@@ -765,7 +765,7 @@ async def process_stake_sts(message: types.Message, state: FSMContext):
     max_value = ''
     while max_value == '':
         try:
-            url = f'https://testnet.tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_wallet_data'
+            url = f'https://tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_wallet_data'
             max_value = float(requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()['decoded']['balance'])
         except Exception as e:
             print(e)
@@ -829,9 +829,9 @@ async def process_unstake_sts(message: types.Message, state: FSMContext):
         await connect_wallet_tonkeeper(message)
         return
     
-    user_channel_status = await bot.get_chat_member(chat_id=-1002133374530, user_id=message.from_user.id)
+    user_channel_status = await bot.get_chat_member(chat_id=-1001671984291, user_id=message.from_user.id)
     if user_channel_status["status"] == 'left':
-        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](https://t.me/+mhOR-8h28xg1ZTli)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
+        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](t.me/TSC_official_channel)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
         return
 
     sts_wallet_address = await get_wallet_address(connector.account.address, sts_jetton_minter_address)
@@ -839,7 +839,7 @@ async def process_unstake_sts(message: types.Message, state: FSMContext):
     max_value = ''
     while max_value == '':
         try:
-            url = f'https://testnet.tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_extra_data'
+            url = f'https://tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_extra_data'
             max_value = int(requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()['stack'][0]['num'], 16)
         except Exception as e:
             print(e)
@@ -903,9 +903,9 @@ async def process_buy_ts(message: types.Message, state: FSMContext):
         await connect_wallet_tonkeeper(message)
         return
     
-    user_channel_status = await bot.get_chat_member(chat_id=-1002133374530, user_id=message.from_user.id)
+    user_channel_status = await bot.get_chat_member(chat_id=-1001671984291, user_id=message.from_user.id)
     if user_channel_status["status"] == 'left':
-        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](https://t.me/+mhOR-8h28xg1ZTli)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
+        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](t.me/TSC_official_channel)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
         return
 
     try:
