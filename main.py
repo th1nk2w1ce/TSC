@@ -164,7 +164,7 @@ async def start_command(message: types.Message):
 
                     storage_referer = database.Storage(str(cur.execute(f"SELECT referer FROM users WHERE tg_id == {message.from_user.id}").fetchall()[0][0]))
 
-                    connector_referer = TonConnect(manifest_url='https://raw.githubusercontent.com/AndreyBur/Access_control_bot/master/pytonconnect-manifest.json', storage=storage_referer)
+                    connector_referer = TonConnect(manifest_url='https://raw.githubusercontent.com/coinvent-solutions/TSPC-public/main/manifest.json', storage=storage_referer)
                     # Attempt to restore the existing connection, if any
                     is_connected = await connector_referer.restore_connection()
 
@@ -202,7 +202,7 @@ async def start_command(message: types.Message):
     storage = database.Storage(str(message.from_user.id))
 
     # Initialize a connection using the given manifest URL and storage
-    connector = TonConnect(manifest_url='https://raw.githubusercontent.com/AndreyBur/Access_control_bot/master/pytonconnect-manifest.json', storage=storage)
+    connector = TonConnect(manifest_url='https://raw.githubusercontent.com/coinvent-solutions/TSPC-public/main/manifest.json', storage=storage)
     # Attempt to restore the existing connection, if any
     is_connected = await connector.restore_connection()
 
@@ -244,7 +244,7 @@ async def connect_wallet_tonkeeper(message: types.Message):
     storage = database.Storage(str(message.from_user.id))
     
     # Initialize a connection using the given manifest URL and storage
-    connector = TonConnect(manifest_url='https://raw.githubusercontent.com/AndreyBur/Access_control_bot/master/pytonconnect-manifest.json', storage=storage)
+    connector = TonConnect(manifest_url='https://raw.githubusercontent.com/coinvent-solutions/TSPC-public/main/manifest.json', storage=storage)
     # Attempt to restore the existing connection, if any
     is_connected = await connector.restore_connection()
 
@@ -328,7 +328,7 @@ async def personal_account(message: types.Message):
     storage = database.Storage(str(message.from_user.id))
 
     # Initialize a connection using the given manifest URL and storage
-    connector = TonConnect(manifest_url='https://raw.githubusercontent.com/AndreyBur/Access_control_bot/master/pytonconnect-manifest.json', storage=storage)
+    connector = TonConnect(manifest_url='https://raw.githubusercontent.com/coinvent-solutions/TSPC-public/main/manifest.json', storage=storage)
     # Attempt to restore the existing connection, if any
     is_connected = await connector.restore_connection()
 
@@ -457,7 +457,7 @@ async def sell_ts(message: types.Message):
     storage = database.Storage(str(message.from_user.id))
 
     # Initialize a connection using the given manifest URL and storage
-    connector = TonConnect(manifest_url='https://raw.githubusercontent.com/AndreyBur/Access_control_bot/master/pytonconnect-manifest.json', storage=storage)
+    connector = TonConnect(manifest_url='https://raw.githubusercontent.com/coinvent-solutions/TSPC-public/main/manifest.json', storage=storage)
     # Attempt to restore the existing connection, if any
     is_connected = await connector.restore_connection()
 
@@ -514,7 +514,7 @@ async def buy_ts(message: types.Message):
     storage = database.Storage(str(message.from_user.id))
 
     # Initialize a connection using the given manifest URL and storage
-    connector = TonConnect(manifest_url='https://raw.githubusercontent.com/AndreyBur/Access_control_bot/master/pytonconnect-manifest.json', storage=storage)
+    connector = TonConnect(manifest_url='https://raw.githubusercontent.com/coinvent-solutions/TSPC-public/main/manifest.json', storage=storage)
     # Attempt to restore the existing connection, if any
     is_connected = await connector.restore_connection()
 
@@ -559,7 +559,7 @@ async def stake_sts(message: types.Message):
     storage = database.Storage(str(message.from_user.id))
 
     # Initialize a connection using the given manifest URL and storage
-    connector = TonConnect(manifest_url='https://raw.githubusercontent.com/AndreyBur/Access_control_bot/master/pytonconnect-manifest.json', storage=storage)
+    connector = TonConnect(manifest_url='https://raw.githubusercontent.com/coinvent-solutions/TSPC-public/main/manifest.json', storage=storage)
     # Attempt to restore the existing connection, if any
     is_connected = await connector.restore_connection()
 
@@ -619,7 +619,7 @@ async def unstake_sts(message: types.Message):
     storage = database.Storage(str(message.from_user.id))
 
     # Initialize a connection using the given manifest URL and storage
-    connector = TonConnect(manifest_url='https://raw.githubusercontent.com/AndreyBur/Access_control_bot/master/pytonconnect-manifest.json', storage=storage)
+    connector = TonConnect(manifest_url='https://raw.githubusercontent.com/coinvent-solutions/TSPC-public/main/manifest.json', storage=storage)
     # Attempt to restore the existing connection, if any
     is_connected = await connector.restore_connection()
 
@@ -675,7 +675,7 @@ async def process_sell_ts(message: types.Message, state: FSMContext):
     storage = database.Storage(str(message.from_user.id))
 
     # Initialize a connection using the given manifest URL and storage
-    connector = TonConnect(manifest_url='https://raw.githubusercontent.com/AndreyBur/Access_control_bot/master/pytonconnect-manifest.json', storage=storage)
+    connector = TonConnect(manifest_url='https://raw.githubusercontent.com/coinvent-solutions/TSPC-public/main/manifest.json', storage=storage)
     # Attempt to restore the existing connection, if any
     is_connected = await connector.restore_connection()
 
@@ -745,7 +745,7 @@ async def process_stake_sts(message: types.Message, state: FSMContext):
     storage = database.Storage(str(message.from_user.id))
 
     # Initialize a connection using the given manifest URL and storage
-    connector = TonConnect(manifest_url='https://raw.githubusercontent.com/AndreyBur/Access_control_bot/master/pytonconnect-manifest.json', storage=storage)
+    connector = TonConnect(manifest_url='https://raw.githubusercontent.com/coinvent-solutions/TSPC-public/main/manifest.json', storage=storage)
     # Attempt to restore the existing connection, if any
     is_connected = await connector.restore_connection()
 
@@ -819,7 +819,7 @@ async def process_unstake_sts(message: types.Message, state: FSMContext):
     storage = database.Storage(str(message.from_user.id))
 
     # Initialize a connection using the given manifest URL and storage
-    connector = TonConnect(manifest_url='https://raw.githubusercontent.com/AndreyBur/Access_control_bot/master/pytonconnect-manifest.json', storage=storage)
+    connector = TonConnect(manifest_url='https://raw.githubusercontent.com/coinvent-solutions/TSPC-public/main/manifest.json', storage=storage)
     # Attempt to restore the existing connection, if any
     is_connected = await connector.restore_connection()
 
@@ -893,7 +893,7 @@ async def process_buy_ts(message: types.Message, state: FSMContext):
     storage = database.Storage(str(message.from_user.id))
 
     # Initialize a connection using the given manifest URL and storage
-    connector = TonConnect(manifest_url='https://raw.githubusercontent.com/AndreyBur/Access_control_bot/master/pytonconnect-manifest.json', storage=storage)
+    connector = TonConnect(manifest_url='https://raw.githubusercontent.com/coinvent-solutions/TSPC-public/main/manifest.json', storage=storage)
     # Attempt to restore the existing connection, if any
     is_connected = await connector.restore_connection()
 
