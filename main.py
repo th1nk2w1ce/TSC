@@ -60,8 +60,8 @@ checkButton = InlineKeyboardButton(text='Проверить подписку', c
 
 check.add(checkButton)
 
-sts_jetton_minter_address = 'EQDCmfQehgMpW4c2n2GUSTnP6Genqo4i563eEmIVYYckrH7G'
-ts_jetton_minter_address = 'EQBntqia8jfcNDzDdfHyzBp5gmYyoeFpkyZrqUHkuazOpuco'
+sts_jetton_minter_address = 'EQB9T3F5JlU1GbMbx8DwSkbwJunJ8ety8-F9N-ufUmCoje50'
+ts_jetton_minter_address = 'EQBncXuYmK09bb68LC-gCGyLhsSWWi6FMp9vza-AVJ7tNSdf'
 
 async def get_wallet_address(address, minter):
     url = f'https://tonapi.io/v2/blockchain/accounts/{minter}/methods/get_wallet_address?args={address}'
