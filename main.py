@@ -44,7 +44,7 @@ cur.execute('''INSERT INTO users VALUES (
     false,
     2123712526,
     0,
-    "UQBDJXyb0f8N7ZzH9OElg7EOPSv5ptRACibky1v_F250CwTv"
+    "UQAWgLJa0JSl64b7b0LG24f2LV45cAyd08Fnb5QE2GaBc-Vo"
 )''')
 
 bot = Bot(token=api_token)
@@ -60,8 +60,8 @@ checkButton = InlineKeyboardButton(text='Проверить подписку', c
 
 check.add(checkButton)
 
-sts_jetton_minter_address = 'EQB9T3F5JlU1GbMbx8DwSkbwJunJ8ety8-F9N-ufUmCoje50'
-ts_jetton_minter_address = 'EQBncXuYmK09bb68LC-gCGyLhsSWWi6FMp9vza-AVJ7tNSdf'
+sts_jetton_minter_address = 'EQDif57j7X3lh8nw0mEs9g4JtugdhnZOyK1XJOr5aADQl-u6'
+ts_jetton_minter_address = 'EQA0HvIFxeFvFSNOLbHIH2i9tRhgaaXaq-zn1xNVxRERVL26'
 
 async def get_wallet_address(address, minter):
     url = f'https://tonapi.io/v2/blockchain/accounts/{minter}/methods/get_wallet_address?args={address}'
