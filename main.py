@@ -60,11 +60,11 @@ checkButton = InlineKeyboardButton(text='Проверить подписку', c
 
 check.add(checkButton)
 
-sts_jetton_minter_address = 'EQDif57j7X3lh8nw0mEs9g4JtugdhnZOyK1XJOr5aADQl-u6'
-ts_jetton_minter_address = 'EQA0HvIFxeFvFSNOLbHIH2i9tRhgaaXaq-zn1xNVxRERVL26'
+sts_jetton_minter_address = '0QA4RXcD0DAbQAiBWwYFAh2pfqLMa_xNujqjfyF_80qDwS3N'
+ts_jetton_minter_address = '0QA_erJnegHTLiXtrPkZJoz6YaD6nwjdkCwvGgNXSJDru2VD'
 
 async def get_wallet_address(address, minter):
-    url = f'https://tonapi.io/v2/blockchain/accounts/{minter}/methods/get_wallet_address?args={address}'
+    url = f'https://testnet.tonapi.io/v2/blockchain/accounts/{minter}/methods/get_wallet_address?args={address}'
     try:
         response = requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()['decoded']['jetton_wallet_address']
         return response
@@ -94,10 +94,10 @@ async def deploy_wallets(address, user_id):
 
     try:
         await asyncio.sleep(0.5)
-        url = f'https://tonapi.io/v2/blockchain/accounts/{ts_wallet_address}/methods/get_extra_data'
+        url = f'https://testnet.tonapi.io/v2/blockchain/accounts/{ts_wallet_address}/methods/get_extra_data'
         ts_referer = requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()
         await asyncio.sleep(0.5)
-        url = f'https://tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_extra_data'
+        url = f'https://testnet.tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_extra_data'
         sts_referer = requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()
     except Exception as e:
         print(103)
@@ -381,21 +381,21 @@ async def personal_account(message: types.Message):
         await asyncio.sleep(1)
         if ts == '':
             try:
-                url = f'https://tonapi.io/v2/blockchain/accounts/{ts_wallet_address}/methods/get_wallet_data'
+                url = f'https://testnet.tonapi.io/v2/blockchain/accounts/{ts_wallet_address}/methods/get_wallet_data'
                 ts = float(requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()['decoded']['balance']) / 1e9
             except Exception as e:
                 print(e)
                 pass
         if sts == '':
             try:
-                url = f'https://tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_wallet_data'
+                url = f'https://testnet.tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_wallet_data'
                 sts = float(requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()['decoded']['balance']) / 1e9
             except Exception as e:
                 print(e)
                 pass
         if balance_stacked == '':
             try:
-                url = f'https://tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_extra_data'
+                url = f'https://testnet.tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_extra_data'
                 response = requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()
                 balance_stacked = float(int(response['stack'][0]['num'], 16))
                 first_lvl_staked = float(int(response['stack'][3]['num'], 16))
@@ -493,7 +493,7 @@ async def sell_ts(message: types.Message):
     value = ''
     while value == '':
         try:
-            url = f'https://tonapi.io/v2/blockchain/accounts/{ts_wallet_address}/methods/get_wallet_data'
+            url = f'https://testnet.tonapi.io/v2/blockchain/accounts/{ts_wallet_address}/methods/get_wallet_data'
             value = float(requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()['decoded']['balance'])
         except Exception as e:
             print(e)
@@ -595,7 +595,7 @@ async def stake_sts(message: types.Message):
     value = ''
     while value == '':
         try:
-            url = f'https://tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_wallet_data'
+            url = f'https://testnet.tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_wallet_data'
             value = float(requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()['decoded']['balance'])
         except Exception as e:
             print(e)
@@ -655,7 +655,7 @@ async def unstake_sts(message: types.Message):
     value = ''
     while value == '':
         try:
-            url = f'https://tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_extra_data'
+            url = f'https://testnet.tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_extra_data'
             value = int(requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()['stack'][0]['num'], 16)
         except Exception as e:
             print(e)
@@ -695,7 +695,7 @@ async def process_sell_ts(message: types.Message, state: FSMContext):
     max_value = ''
     while max_value == '':
         try:
-            url = f'https://tonapi.io/v2/blockchain/accounts/{ts_wallet_address}/methods/get_wallet_data'
+            url = f'https://testnet.tonapi.io/v2/blockchain/accounts/{ts_wallet_address}/methods/get_wallet_data'
             max_value = float(requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()['decoded']['balance'])
         except Exception as e:
             print(e)
@@ -765,7 +765,7 @@ async def process_stake_sts(message: types.Message, state: FSMContext):
     max_value = ''
     while max_value == '':
         try:
-            url = f'https://tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_wallet_data'
+            url = f'https://testnet.tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_wallet_data'
             max_value = float(requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()['decoded']['balance'])
         except Exception as e:
             print(e)
@@ -839,7 +839,7 @@ async def process_unstake_sts(message: types.Message, state: FSMContext):
     max_value = ''
     while max_value == '':
         try:
-            url = f'https://tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_extra_data'
+            url = f'https://testnet.tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_extra_data'
             max_value = int(requests.get(url, headers={'Authorization': f'Bearer {tonapi_key}'}).json()['stack'][0]['num'], 16)
         except Exception as e:
             print(e)
