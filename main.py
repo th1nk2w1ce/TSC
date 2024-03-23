@@ -294,9 +294,9 @@ async def connect_wallet_tonkeeper(message: types.Message):
     # Confirm to the user that the wallet has been successfully connected
     await message.answer('Ваш кошелёк успешно подключён')
 
-    user_channel_status = await bot.get_chat_member(chat_id=-1001671984291, user_id=message.from_user.id)
+    user_channel_status = await bot.get_chat_member(chat_id=-1001594336200, user_id=message.from_user.id)
     if user_channel_status["status"] == 'left':
-        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](t.me/TSC_official_channel)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
+        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](t.me/tsc_official_channel)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
         return
     
     if not cur.execute(f"SELECT flag FROM users WHERE tg_id == {message.from_user.id}").fetchall()[0][0]:
@@ -309,7 +309,7 @@ async def connect_wallet_tonkeeper(message: types.Message):
 
 @dp.callback_query_handler(text = 'check')
 async def check_subscription(call: types.CallbackQuery):
-    user_channel_status = await bot.get_chat_member(chat_id=-1001671984291, user_id=call.from_user.id)
+    user_channel_status = await bot.get_chat_member(chat_id=-1001594336200, user_id=call.from_user.id)
     if user_channel_status["status"] == 'left':
         await call.answer("Вы не подписаны на канал")
         return
@@ -338,9 +338,9 @@ async def personal_account(message: types.Message):
         await connect_wallet_tonkeeper(message)
         return
     
-    user_channel_status = await bot.get_chat_member(chat_id=-1001671984291, user_id=message.from_user.id)
+    user_channel_status = await bot.get_chat_member(chat_id=-1001594336200, user_id=message.from_user.id)
     if user_channel_status["status"] == 'left':
-        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](t.me/TSC_official_channel)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
+        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](t.me/tsc_official_channel)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
         return
 
     if not cur.execute(f"SELECT flag FROM users WHERE tg_id == {message.from_user.id}").fetchall()[0][0]:
@@ -467,9 +467,9 @@ async def sell_ts(message: types.Message):
         await connect_wallet_tonkeeper(message)
         return
     
-    user_channel_status = await bot.get_chat_member(chat_id=-1001671984291, user_id=message.from_user.id)
+    user_channel_status = await bot.get_chat_member(chat_id=-1001594336200, user_id=message.from_user.id)
     if user_channel_status["status"] == 'left':
-        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](t.me/TSC_official_channel)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
+        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](t.me/tsc_official_channel)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
         return
     
     transaction = await deploy_wallets(connector.account.address, message.from_user.id)
@@ -524,9 +524,9 @@ async def buy_ts(message: types.Message):
         await connect_wallet_tonkeeper(message)
         return
     
-    user_channel_status = await bot.get_chat_member(chat_id=-1001671984291, user_id=message.from_user.id)
+    user_channel_status = await bot.get_chat_member(chat_id=-1001594336200, user_id=message.from_user.id)
     if user_channel_status["status"] == 'left':
-        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](t.me/TSC_official_channel)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
+        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](t.me/tsc_official_channel)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
         return
     
     transaction = await deploy_wallets(connector.account.address, message.from_user.id)
@@ -569,9 +569,9 @@ async def stake_sts(message: types.Message):
         await connect_wallet_tonkeeper(message)
         return
     
-    user_channel_status = await bot.get_chat_member(chat_id=-1001671984291, user_id=message.from_user.id)
+    user_channel_status = await bot.get_chat_member(chat_id=-1001594336200, user_id=message.from_user.id)
     if user_channel_status["status"] == 'left':
-        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](t.me/TSC_official_channel)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
+        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](t.me/tsc_official_channel)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
         return
     
     transaction = await deploy_wallets(connector.account.address, message.from_user.id)
@@ -629,9 +629,9 @@ async def unstake_sts(message: types.Message):
         await connect_wallet_tonkeeper(message)
         return
     
-    user_channel_status = await bot.get_chat_member(chat_id=-1001671984291, user_id=message.from_user.id)
+    user_channel_status = await bot.get_chat_member(chat_id=-1001594336200, user_id=message.from_user.id)
     if user_channel_status["status"] == 'left':
-        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](t.me/TSC_official_channel)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
+        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](t.me/tsc_official_channel)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
         return
     
     transaction = await deploy_wallets(connector.account.address, message.from_user.id)
@@ -685,9 +685,9 @@ async def process_sell_ts(message: types.Message, state: FSMContext):
         await connect_wallet_tonkeeper(message)
         return
     
-    user_channel_status = await bot.get_chat_member(chat_id=-1001671984291, user_id=message.from_user.id)
+    user_channel_status = await bot.get_chat_member(chat_id=-1001594336200, user_id=message.from_user.id)
     if user_channel_status["status"] == 'left':
-        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](t.me/TSC_official_channel)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
+        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](t.me/tsc_official_channel)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
         return
 
     ts_wallet_address = await get_wallet_address(connector.account.address, ts_jetton_minter_address)
@@ -755,9 +755,9 @@ async def process_stake_sts(message: types.Message, state: FSMContext):
         await connect_wallet_tonkeeper(message)
         return
     
-    user_channel_status = await bot.get_chat_member(chat_id=-1001671984291, user_id=message.from_user.id)
+    user_channel_status = await bot.get_chat_member(chat_id=-1001594336200, user_id=message.from_user.id)
     if user_channel_status["status"] == 'left':
-        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](t.me/TSC_official_channel)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
+        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](t.me/tsc_official_channel)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
         return
 
     sts_wallet_address = await get_wallet_address(connector.account.address, sts_jetton_minter_address)
@@ -829,9 +829,9 @@ async def process_unstake_sts(message: types.Message, state: FSMContext):
         await connect_wallet_tonkeeper(message)
         return
     
-    user_channel_status = await bot.get_chat_member(chat_id=-1001671984291, user_id=message.from_user.id)
+    user_channel_status = await bot.get_chat_member(chat_id=-1001594336200, user_id=message.from_user.id)
     if user_channel_status["status"] == 'left':
-        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](t.me/TSC_official_channel)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
+        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](t.me/tsc_official_channel)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
         return
 
     sts_wallet_address = await get_wallet_address(connector.account.address, sts_jetton_minter_address)
@@ -903,9 +903,9 @@ async def process_buy_ts(message: types.Message, state: FSMContext):
         await connect_wallet_tonkeeper(message)
         return
     
-    user_channel_status = await bot.get_chat_member(chat_id=-1001671984291, user_id=message.from_user.id)
+    user_channel_status = await bot.get_chat_member(chat_id=-1001594336200, user_id=message.from_user.id)
     if user_channel_status["status"] == 'left':
-        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](t.me/TSC_official_channel)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
+        await message.answer("Прежде чем начать работу с ботом подпишитесь на [канал](t.me/tsc_official_channel)", parse_mode='MarkdownV2', disable_web_page_preview=True, reply_markup = check)
         return
 
     try:
