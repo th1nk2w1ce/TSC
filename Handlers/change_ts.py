@@ -1,3 +1,5 @@
+import asyncio
+
 from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.filters import CommandObject
@@ -92,11 +94,24 @@ async def sell_ts_approve(call: CallbackQuery, state: FSMContext):
             },
         ]
     }
-    
-    
+
     try:
         await msg.edit_text(messages['accept_trans'], reply_markup=kb.open_wallet_kb())
-        await connector.send_transaction(transaction)
+        trans = await connector.send_transaction(transaction)
+        cell_tr = begin_cell().end_cell().one_from_boc(b64str_to_hex(trans['boc'])).bytes_hash().hex()
+
+        await msg.edit_text(messages['pls_wait'])
+        print(cell_tr)
+        for _ in range(60):
+            await asyncio.sleep(2)
+            async with aiohttp.ClientSession() as session:
+                response = await session.get(f'https://tonapi.io/v2/events/{cell_tr}')
+            try:
+                if not (await response.json())['in_progress']:
+                    print('Transaction completed')
+                    break
+            except KeyError:
+                pass
     except Exception as e:
         print(e)
         await msg.edit_text(messages['something_went_wrong'])
