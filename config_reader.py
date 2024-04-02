@@ -5,6 +5,7 @@ from pydantic import SecretStr
 class Settings(BaseSettings):
     bot_token: SecretStr
     group_id: SecretStr
+    tonapi_host: SecretStr
     tonapi_key: SecretStr
     manifest_url: SecretStr
     sts_jetton_minter_address: SecretStr

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, BigInteger, Integer, String
+from sqlalchemy import Column, BigInteger, Integer, String, Boolean
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlalchemy.orm import declarative_base
 
@@ -23,10 +23,12 @@ Base = declarative_base()
 class User(Base):
     __tablename__ = 'users'
 
-    user_id = Column(BigInteger, primary_key=True, unique=True)
-    referrer = Column(BigInteger, default=0)
-    all_referrals = Column(Integer, default=0)
-    referrer_address = Column(String, default='0')
+    tg_id = Column(BigInteger, primary_key=True, unique=True)
+    sts = Column(Integer, default='0')
+    flag = Column(Integer, default='0')
+    referer = Column(BigInteger, default=0)
+    all_referals = Column(Integer, default=0)
+    referer_address = Column(String, default='0')
 
 
 async def async_main():

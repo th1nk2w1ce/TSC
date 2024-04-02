@@ -36,7 +36,7 @@ async def stake_sts(call: CallbackQuery, state: FSMContext):
     value = ''
     while value == '':
         try:
-            url = f'https://tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_extra_data'
+            url = f'{config.tonapi_host.get_secret_value()}/v2/blockchain/accounts/{sts_wallet_address}/methods/get_extra_data'
             async with aiohttp.ClientSession() as session:
                 response = await session.get(url, headers={'Authorization': f'Bearer {config.tonapi_key.get_secret_value()}'})
             value = int((await response.json())['stack'][0]['num'], 16)
@@ -107,7 +107,7 @@ async def stake_sts_approve(call: CallbackQuery, state: FSMContext):
         for _ in range(60):
             await asyncio.sleep(2)
             async with aiohttp.ClientSession() as session:
-                response = await session.get(f'https://tonapi.io/v2/events/{cell_tr}')
+                response = await session.get(f'{config.tonapi_host.get_secret_value()}/v2/events/{cell_tr}')
             try:
                 if not (await response.json())['in_progress']:
                     break

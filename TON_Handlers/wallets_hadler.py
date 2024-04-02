@@ -9,7 +9,7 @@ from DB.db_requests import Storage
 
 
 async def get_wallet_address(address, minter):
-    url = f'https://tonapi.io/v2/blockchain/accounts/{minter}/methods/get_wallet_address?args={address}'
+    url = f'{config.tonapi_host.get_secret_value()}/v2/blockchain/accounts/{minter}/methods/get_wallet_address?args={address}'
     try:
         async with aiohttp.ClientSession() as session:
             resp = await session.get(url=url, headers={'Authorization': f'Bearer {config.tonapi_key.get_secret_value()}'})
@@ -39,12 +39,12 @@ async def deploy_wallets(address, user_id):
 
     try:
         await asyncio.sleep(0.5)
-        url = f'https://tonapi.io/v2/blockchain/accounts/{ts_wallet_address}/methods/get_extra_data'
+        url = f'{config.tonapi_host.get_secret_value()}/v2/blockchain/accounts/{ts_wallet_address}/methods/get_extra_data'
         async with aiohttp.ClientSession() as session:
             resp = await session.get(url, headers={'Authorization': f'Bearer {config.tonapi_key.get_secret_value()}'})
         ts_referer = await resp.json()
         await asyncio.sleep(0.5)
-        url = f'https://tonapi.io/v2/blockchain/accounts/{sts_wallet_address}/methods/get_extra_data'
+        url = f'{config.tonapi_host.get_secret_value()}/v2/blockchain/accounts/{sts_wallet_address}/methods/get_extra_data'
         async with aiohttp.ClientSession() as session:
             resp = await session.get(url, headers={'Authorization': f'Bearer {config.tonapi_key.get_secret_value()}'})
         sts_referer = await resp.json()
@@ -110,7 +110,7 @@ async def deploy_wallets(address, user_id):
 
 
 async def get_balance(address: str) -> float:
-    url = f'https://tonapi.io/v2/blockchain/accounts/{address}/methods/get_wallet_data'
+    url = f'{config.tonapi_host.get_secret_value()}/v2/blockchain/accounts/{address}/methods/get_wallet_data'
     try:
         async with aiohttp.ClientSession() as session:
             resp = await session.get(url, headers={'Authorization': f'Bearer {config.tonapi_key.get_secret_value()}'})
@@ -123,7 +123,7 @@ async def get_balance(address: str) -> float:
 
 async def get_staked_balance(address: str) -> tuple[float, float, int]:
     try:
-        url = f'https://tonapi.io/v2/blockchain/accounts/{address}/methods/get_extra_data'
+        url = f'{config.tonapi_host.get_secret_value()}/v2/blockchain/accounts/{address}/methods/get_extra_data'
         async with aiohttp.ClientSession() as session:
             resp = await session.get(url, headers={'Authorization': f'Bearer {config.tonapi_key.get_secret_value()}'})
         response = await resp.json()
