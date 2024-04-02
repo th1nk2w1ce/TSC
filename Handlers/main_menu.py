@@ -9,6 +9,7 @@ from aiogram.types import Message, CallbackQuery, BufferedInputFile
 from aiogram.utils.deep_linking import create_start_link, decode_payload
 from tonsdk.utils import *
 from tonsdk.boc import *
+from datetime import datetime
 
 from languages import messages
 from DB.db_requests import Storage, get_first_lvl_referrals
@@ -137,6 +138,7 @@ async def personal_account(message: Message, state: FSMContext):
     sts = ''
     balance_stacked = ''
     first_lvl_staked = ''
+    last_activity = 0
 
     for _ in range(120):
         if ts == '':
@@ -144,7 +146,7 @@ async def personal_account(message: Message, state: FSMContext):
         if sts == '':
             sts = await TH.get_balance(sts_wallet_address)
         if balance_stacked == '':
-            balance_stacked, first_lvl_staked = await TH.get_staked_balance(sts_wallet_address)
+            balance_stacked, first_lvl_staked, last_activity = await TH.get_staked_balance(sts_wallet_address)
         if ts != '' and sts != '':
             break
         await asyncio.sleep(1)
@@ -166,7 +168,13 @@ async def personal_account(message: Message, state: FSMContext):
             referer_name = 'No name'
         referer = f'<a href="tg://user?id={referer}">{referer_name}</a>'
 
-    await message.edit_text(messages['main_menu'].format(firts_lvl_referals, all_referals, referer, qualification, sts, (balance_stacked / 1e9), ((first_lvl_staked - balance_stacked) / 1e9), ts, link), reply_markup=kb.main_menu_kb())
+    dtime = int(datetime.now().timestamp()) - last_activity
+    reward_staked = balance_stacked * dtime * 6018518518518519 / 100000000000000000000000
+
+    if balance_stacked == 0:
+        reward_staked = 0.0
+
+    await message.edit_text(messages['main_menu'].format(firts_lvl_referals, all_referals, referer, qualification, sts, (balance_stacked / 1e9), reward_staked, ((first_lvl_staked - balance_stacked) / 1e9), ts, link), reply_markup=kb.main_menu_kb())
 
 
 @router.message(Command("disconnect_wallet"))

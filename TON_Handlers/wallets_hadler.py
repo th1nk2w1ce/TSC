@@ -121,13 +121,13 @@ async def get_balance(address: str) -> float:
         return 0
 
 
-async def get_staked_balance(address: str) -> tuple[float, float]:
+async def get_staked_balance(address: str) -> tuple[float, float, int]:
     try:
         url = f'https://tonapi.io/v2/blockchain/accounts/{address}/methods/get_extra_data'
         async with aiohttp.ClientSession() as session:
             resp = await session.get(url, headers={'Authorization': f'Bearer {config.tonapi_key.get_secret_value()}'})
         response = await resp.json()
-        return float(int(response['stack'][0]['num'], 16)), float(int(response['stack'][3]['num'], 16))
+        return float(int(response['stack'][0]['num'], 16)), float(int(response['stack'][3]['num'], 16)), int(response['stack'][1]['num'], 16)
     except Exception as e:
         print(f'Error: {e}')
-        return 0, 0
+        return 0, 0, 0
