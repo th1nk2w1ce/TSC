@@ -108,7 +108,6 @@ async def sell_ts_approve(call: CallbackQuery, state: FSMContext):
                 response = await session.get(f'https://tonapi.io/v2/events/{cell_tr}')
             try:
                 if not (await response.json())['in_progress']:
-                    print('Transaction completed')
                     break
             except KeyError:
                 pass
