@@ -10,7 +10,7 @@ Path(db_dir).mkdir(parents=True, exist_ok=True)
 
 
 engine = create_async_engine(
-    'sqlite+aiosqlite:///' + db_dir + '/database.db',
+    'sqlite+aiosqlite:///' + db_dir + '/dump.db',
     echo=False,
 )
 

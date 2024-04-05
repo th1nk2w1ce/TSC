@@ -37,8 +37,8 @@ async def sell_ts(call: CallbackQuery, state: FSMContext):
         try:
             url = f'{config.tonapi_host.get_secret_value()}/v2/blockchain/accounts/{ts_wallet_address}/methods/get_wallet_data'
             async with aiohttp.ClientSession() as session:
-                response = await session.get(url, headers={'Authorization': f'Bearer {config.tonapi_key.get_secret_value()}'})
-                value = float((await response.json())['decoded']['balance'])
+                async with session.get(url, headers={'Authorization': f'Bearer {config.tonapi_key.get_secret_value()}'})as response:
+                    value = float((await response.json())['decoded']['balance'])
         except Exception as e:
             print(e)
             pass

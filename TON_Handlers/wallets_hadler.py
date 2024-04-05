@@ -12,9 +12,9 @@ async def get_wallet_address(address, minter):
     url = f'{config.tonapi_host.get_secret_value()}/v2/blockchain/accounts/{minter}/methods/get_wallet_address?args={address}'
     try:
         async with aiohttp.ClientSession() as session:
-            resp = await session.get(url=url, headers={'Authorization': f'Bearer {config.tonapi_key.get_secret_value()}'})
-        response = (await resp.json())['decoded']['jetton_wallet_address']
-        return response
+            async with session.get(url=url, headers={'Authorization': f'Bearer {config.tonapi_key.get_secret_value()}'}) as resp:
+                response = (await resp.json())['decoded']['jetton_wallet_address']
+                return response
     except Exception as e:
         print(f'Error: {e}')
         return None
@@ -41,13 +41,13 @@ async def deploy_wallets(address, user_id):
         await asyncio.sleep(0.5)
         url = f'{config.tonapi_host.get_secret_value()}/v2/blockchain/accounts/{ts_wallet_address}/methods/get_extra_data'
         async with aiohttp.ClientSession() as session:
-            resp = await session.get(url, headers={'Authorization': f'Bearer {config.tonapi_key.get_secret_value()}'})
-        ts_referer = await resp.json()
+            async with await session.get(url, headers={'Authorization': f'Bearer {config.tonapi_key.get_secret_value()}'}) as resp:
+                ts_referer = await resp.json()
         await asyncio.sleep(0.5)
         url = f'{config.tonapi_host.get_secret_value()}/v2/blockchain/accounts/{sts_wallet_address}/methods/get_extra_data'
         async with aiohttp.ClientSession() as session:
-            resp = await session.get(url, headers={'Authorization': f'Bearer {config.tonapi_key.get_secret_value()}'})
-        sts_referer = await resp.json()
+            async with session.get(url, headers={'Authorization': f'Bearer {config.tonapi_key.get_secret_value()}'}) as resp:
+                sts_referer = await resp.json()
     except Exception as e:
         return None
 
@@ -113,8 +113,8 @@ async def get_balance(address: str) -> float:
     url = f'{config.tonapi_host.get_secret_value()}/v2/blockchain/accounts/{address}/methods/get_wallet_data'
     try:
         async with aiohttp.ClientSession() as session:
-            resp = await session.get(url, headers={'Authorization': f'Bearer {config.tonapi_key.get_secret_value()}'})
-        balance = float((await resp.json())['decoded']['balance']) / 1e9
+            async with session.get(url, headers={'Authorization': f'Bearer {config.tonapi_key.get_secret_value()}'})as resp:
+                balance = float((await resp.json())['decoded']['balance']) / 1e9
         return balance
     except Exception as e:
         print(f'Error: {e}')
@@ -125,8 +125,8 @@ async def get_staked_balance(address: str) -> tuple[float, float, int]:
     try:
         url = f'{config.tonapi_host.get_secret_value()}/v2/blockchain/accounts/{address}/methods/get_extra_data'
         async with aiohttp.ClientSession() as session:
-            resp = await session.get(url, headers={'Authorization': f'Bearer {config.tonapi_key.get_secret_value()}'})
-        response = await resp.json()
+            async with session.get(url, headers={'Authorization': f'Bearer {config.tonapi_key.get_secret_value()}'}) as resp:
+                response = await resp.json()
         return float(int(response['stack'][0]['num'], 16)), float(int(response['stack'][3]['num'], 16)), int(response['stack'][1]['num'], 16)
     except Exception as e:
         print(f'Error: {e}')

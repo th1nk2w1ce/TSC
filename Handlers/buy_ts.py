@@ -76,12 +76,12 @@ async def buy_ts_approve(call: CallbackQuery, state: FSMContext):
             for _ in range(60):
                 await asyncio.sleep(2)
                 async with aiohttp.ClientSession() as session:
-                    response = await session.get(f'{config.tonapi_host.get_secret_value()}/v2/events/{cell_tr}')
-                try:
-                    if not (await response.json())['in_progress']:
-                        break
-                except KeyError:
-                    pass
+                    async with session.get(f'{config.tonapi_host.get_secret_value()}/v2/events/{cell_tr}') as response:
+                        try:
+                            if not (await response.json())['in_progress']:
+                                break
+                        except KeyError:
+                            pass
 
         except Exception as e:
             print(e)
