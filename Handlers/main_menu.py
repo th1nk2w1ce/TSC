@@ -152,7 +152,7 @@ async def personal_account(message: Message, state: FSMContext):
             break
         await asyncio.sleep(1)
 
-    qualification = util.get_qualification(all_referals, balance_stacked, first_lvl_staked)
+    qualification = util.get_qualification(balance_stacked, first_lvl_staked, all_referals)
 
     if ts == '' or sts == '':
         await message.edit_text(messages["something_went_wrong"])
