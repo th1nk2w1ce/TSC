@@ -175,7 +175,9 @@ async def personal_account(message: Message, state: FSMContext):
     if balance_stacked == 0:
         reward_staked = 0.0
 
-    await message.edit_text(messages['main_menu'].format(firts_lvl_referals, all_referals, referer, qualification, sts, (balance_stacked / 1e9), round(reward_staked/1e9, 1), ((first_lvl_staked - balance_stacked) / 1e9), ts, link), reply_markup=kb.main_menu_kb())
+    actual = datetime.utcnow().strftime('%H:%M:%S %d.%m.%Y')
+
+    await message.edit_text(messages['main_menu'].format(firts_lvl_referals, all_referals, referer, qualification, sts, (balance_stacked / 1e9), round(reward_staked/1e9, 1), ((first_lvl_staked - balance_stacked) / 1e9), ts, link, actual), reply_markup=kb.main_menu_kb())
 
 
 @router.message(Command("disconnect_wallet"))
