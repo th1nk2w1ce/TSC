@@ -5,7 +5,7 @@ from aiogram import Router, Bot, F
 from aiogram.client.session import aiohttp
 from aiogram.filters import Command, CommandObject
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, CallbackQuery, BufferedInputFile
+from aiogram.types import Message, CallbackQuery, BufferedInputFile, ReplyKeyboardRemove
 from aiogram.utils.deep_linking import create_start_link, decode_payload
 from tonsdk.utils import *
 from tonsdk.boc import *
@@ -26,12 +26,12 @@ router = Router()
 async def start(message: Message, command: CommandObject, state: FSMContext):
     await state.clear()
     if message.from_user.id != message.bot.id:
-        msg = await message.answer(messages["pls_wait"])
+        msg = await message.answer(messages["pls_wait"], reply_markup=ReplyKeyboardRemove())
+        await msg.delete()
+        msg = await message.answer(messages['pls_wait'])
     else:
         try:
-            msg = await message.answer(messages["pls_wait"], reply_markup=ReplyKeyboardRemove())
-            await msg.delete()
-            msg = await message.answer(messages["pls_wait"])
+            msg = await message.edit_text(messages["pls_wait"])
         except Exception as e:
             if 'message to edit not found' in str(e):
                 msg = await message.answer(messages["pls_wait"])
