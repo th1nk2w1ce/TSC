@@ -29,7 +29,9 @@ async def start(message: Message, command: CommandObject, state: FSMContext):
         msg = await message.answer(messages["pls_wait"])
     else:
         try:
-            msg = await message.edit_text(messages["pls_wait"])
+            msg = await message.answer(messages["pls_wait"], reply_markup=ReplyKeyboardRemove())
+            await msg.delete()
+            msg = await message.answer(messages["pls_wait"])
         except Exception as e:
             if 'message to edit not found' in str(e):
                 msg = await message.answer(messages["pls_wait"])
@@ -173,7 +175,7 @@ async def personal_account(message: Message, state: FSMContext):
     if balance_stacked == 0:
         reward_staked = 0.0
 
-    await message.edit_text(messages['main_menu'].format(firts_lvl_referals, all_referals, referer, qualification, sts, (balance_stacked / 1e9), reward_staked, ((first_lvl_staked - balance_stacked) / 1e9), ts, link), reply_markup=kb.main_menu_kb())
+    await message.edit_text(messages['main_menu'].format(firts_lvl_referals, all_referals, referer, qualification, sts, (balance_stacked / 1e9), round(reward_staked/1e9, 1), ((first_lvl_staked - balance_stacked) / 1e9), ts, link), reply_markup=kb.main_menu_kb())
 
 
 @router.message(Command("disconnect_wallet"))
