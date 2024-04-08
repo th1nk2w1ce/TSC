@@ -25,7 +25,7 @@ def main_menu_kb() -> InlineKeyboardMarkup:
     kb.button(text=buttons['stake_sts'], callback_data='stake_sts')
     kb.button(text=buttons['unstake_sts'], callback_data='unstake_sts')
     kb.button(text=buttons['refresh'], callback_data='start')
-    kb.adjust(2, 2, 1)
+    kb.adjust(1, 1, 1, 1, 1)
     return kb.as_markup()
 
 
