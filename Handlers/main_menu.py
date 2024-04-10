@@ -169,11 +169,12 @@ async def personal_account(message: Message, state: FSMContext):
             referer_name = 'No name'
         referer = f'<a href="tg://user?id={referer}">{referer_name}</a>'
 
-    dtime = int(datetime.now().timestamp()) - last_activity
-    jetton_amount = balance_stacked * dtime * 6018518518518519 / 100000000000000000000000
-    x = jetton_amount * 100000000000000000000000 / 6018518518518519
-    start_amount = x * util.get_bon(balance_stacked, first_lvl_staked, all_referals) / 100000000000000000000000
-    reward_staked = start_amount - jetton_amount
+    dtime = int((datetime.utcnow()).timestamp()) + 10800 - last_activity
+    jetton_amount = balance_stacked * dtime * 6018518518518519 // 100000000000000000000000
+    x = jetton_amount * 100000000000000000000000 // 6018518518518519
+    start_amount = x * util.get_bon(balance_stacked, first_lvl_staked, all_referals) // 100000000000000000000000
+    send_amount =  jetton_amount - start_amount
+    reward_staked = jetton_amount - send_amount
 
     if balance_stacked == 0:
         reward_staked = 0.0
