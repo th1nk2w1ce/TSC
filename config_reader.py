@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     group_id: SecretStr
     tonapi_host: SecretStr
     tonapi_key: SecretStr
+    tonapi_bridge_key: SecretStr
     manifest_url: SecretStr
     sts_jetton_minter_address: SecretStr
     ts_jetton_minter_address: SecretStr
