@@ -25,9 +25,9 @@ messages = {
                  'Данные актуальны на: {} (UTC)',
     "buy_ts_amount": 'Введите количество TS для покупки:\n'
                      'Курс: 1 TON = 4 TS\n\n'
-                     '5 TON = 20 TS'
-                     '10 TON = 40 TS'
-                     '50 TON = 200 TS'
+                     '5 TON = 20 TS\n'
+                     '10 TON = 40 TS\n'
+                     '50 TON = 200 TS\n'
                      '100 TON = 400 TS',
     "buy_ts_amount_error": "Неверное количество TS, попробуйте еще раз",
     "buy_ts_approve": 'Вы уверены, что хотите купить {} TS за TON?',
